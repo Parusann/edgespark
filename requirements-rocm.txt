@@ -1,0 +1,34 @@
+# Pinned dependencies for the RX 7900 XTX (RDNA3 / gfx1100) on ROCm 7.x.
+#
+# IMPORTANT: install torch from the ROCm wheel index, NOT PyPI. The PyPI torch is
+# CUDA-only and will not see the AMD GPU. For ROCm 7.x:
+#
+#   pip install --index-url https://download.pytorch.org/whl/rocm6.3 torch
+#   pip install -r requirements-rocm.txt
+#
+# (Match the torch ROCm wheel to your installed ROCm; the consumer "ROCm on
+# Radeon and Ryzen" path is the supported gfx1100 install.)
+
+# --- core (also in pyproject [project.dependencies]) ---
+numpy>=1.24
+PyYAML>=6.0
+
+# --- neural stack ---
+torch>=2.9              # from the ROCm index, see note above
+transformers>=5.10
+safetensors
+sentencepiece
+datasets
+
+# --- quantization (verify on gfx1100 in Phase 0) ---
+bitsandbytes>=0.43      # ROCm build; INT8 W8A8 + NF4. NO FP8 on RDNA3.
+
+# --- training / logging ---
+tensorboard
+
+# --- benchmarking / plots ---
+matplotlib>=3.7
+
+# flash-attention is optional. On gfx1100 it requires AMD's fork
+# (howiejay/navi_support); the code falls back to PyTorch SDPA if absent.
+# Do not add a PyPI flash-attn pin here — it targets CUDA.
