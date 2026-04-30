@@ -1,0 +1,36 @@
+# EdgeSpark drafter: shrunk DSpark-style architecture for Qwen3-4B on 24 GB.
+# Compare against Appendix A for the datacenter DSpark-5 reference values.
+target_model: Qwen/Qwen3-4B
+
+# Draft one block per verifier pass. 5 is the deployed "DSpark-5" size; smaller
+# than DSpark's 7 so less draft is wasted when a block is rejected early.
+block_size: 5
+
+# 2-3 draft layers instead of DSpark's 5 — smaller, faster, less VRAM.
+num_draft_layers: 3
+
+# Hidden-state fusion sources. Subsampled from DSpark's [1, 9, 17, 25, 33] to 3.
+target_layer_ids: [1, 17, 33]
+
+# Low-rank Markov head. 128 vs DSpark's 256: cheaper, quality cost measured in Phase 2.
+markov_rank: 128
+markov_head_type: vanilla
+
+num_anchors: 256
+
+# Keep the confidence signal strong; it is the component under study.
+confidence_head_alpha: 1.0
+confidence_head_with_markov: true
+
+# Training loss weights (DSpark recipe): mostly hidden-state L1 regression, a
+# little token CE, with positional decay so early positions matter most.
+ce_loss_alpha: 0.1
+l1_loss_alpha: 0.9
+loss_decay_gamma: 4.0
+
+precision_train: bf16
+torch_compile: true
+
+# Filled from the verifier at build time; defaults match Qwen3-4B.
+hidden_size: 2560
+vocab_size: 151936

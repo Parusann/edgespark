@@ -1,0 +1,13 @@
+# NF4 4-bit drafter — the aggressive variant, the hardest case for calibration.
+name: nf4
+scheme: nf4
+target: drafter
+backend: bitsandbytes
+
+quantize_backbone: true
+quantize_markov_head: false
+quantize_confidence_head: false
+
+# Nested (double) quantization of the block scales; standard for NF4.
+double_quant: true
+compute_dtype: bfloat16

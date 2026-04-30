@@ -1,0 +1,9 @@
+# Benchmark harness settings (spec section 12).
+prompt_sets: [chat, code]
+max_new_tokens: 256
+seeds: [0, 1, 2]
+warmup_prompts: 2
+decoding: greedy          # 'greedy' | 'stochastic'
+temperature: 0.0
+output_dir: runs
+precisions: [fp16, int8, nf4]

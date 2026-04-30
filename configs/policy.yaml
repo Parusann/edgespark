@@ -1,0 +1,15 @@
+# Single-stream verification-length policy (spec section 9.5).
+kind: threshold          # 'threshold' | 'fixed' | 'oracle'
+
+# Verify the longest drafted prefix whose cumulative calibrated survival stays
+# above theta. Tuned on held-out data in Phase 5; the value below is the tuned
+# operating point for the INT8 drafter + INT8 verifier on the code+chat mix.
+theta: 0.45
+
+# Gently lengthen verification when the recent stream has been accepting well and
+# shorten it when accepts dry up. Set to 0 for the pure static rule.
+ema_gain: 0.15
+min_length: 1
+
+# For the always-verify-all ablation, set kind: fixed and fixed_length: 5.
+fixed_length: null

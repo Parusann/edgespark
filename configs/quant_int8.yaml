@@ -1,0 +1,14 @@
+# INT8 W8A8 drafter — the primary quantization variant (spec section 9.3).
+name: int8
+scheme: w8a8
+target: drafter
+backend: bitsandbytes   # verified on gfx1100 in Phase 0; AWQ/GPTQ are alternates
+
+quantize_backbone: true
+quantize_markov_head: false
+# Keep the confidence head in high precision by default: it is what miscalibrates,
+# so quantizing it last isolates the effect (section 9.4).
+quantize_confidence_head: false
+
+double_quant: false
+compute_dtype: bfloat16
