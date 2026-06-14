@@ -1,0 +1,23 @@
+{
+  "fp16": {
+    "ece_raw": 0.006,
+    "ece_recalibrated": 0.0034,
+    "brier_raw": 0.1587,
+    "brier_recalibrated": 0.1586,
+    "temperature": 1.03
+  },
+  "int8": {
+    "ece_raw": 0.0974,
+    "ece_recalibrated": 0.0056,
+    "brier_raw": 0.1788,
+    "brier_recalibrated": 0.1685,
+    "temperature": 1.777
+  },
+  "nf4": {
+    "ece_raw": 0.1616,
+    "ece_recalibrated": 0.0104,
+    "brier_raw": 0.2145,
+    "brier_recalibrated": 0.1863,
+    "temperature": 2.641
+  }
+}
