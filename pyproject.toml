@@ -9,7 +9,7 @@ description = "Quantized speculative decoding for a single consumer AMD GPU, wit
 readme = "README.md"
 requires-python = ">=3.10"
 license = { file = "LICENSE" }
-authors = [{ name = "Parusann" }]
+authors = [{ name = "Parusan Natheeswaran" }]
 keywords = ["speculative-decoding", "quantization", "rocm", "calibration", "llm-inference"]
 classifiers = [
     "Programming Language :: Python :: 3",
