@@ -102,3 +102,24 @@ def test_recalibration_is_monotone():
     for scaler in (TemperatureScaler().fit(conf, outcome), PlattScaler().fit(conf, outcome)):
         mapped = scaler.transform(conf)
         assert np.all(np.diff(mapped) >= -1e-9)
+
+
+def test_platt_survives_severe_overconfidence():
+    # Regression: an undamped Newton fit diverges (slope ~1e6, NLL far above the
+    # minimum) on a badly over-confident head — precisely the aggressive-quantization
+    # (NF4) regime this method exists to repair. The damped fit must converge to the
+    # true minimum, recover ECE toward fp16, and stay monotone.
+    rng = np.random.default_rng(7)
+    true_logit = rng.standard_normal(100_000) * 1.5
+    outcome = _bernoulli(rng, _sigmoid(true_logit))
+    conf = _sigmoid(4.0 * true_logit)  # severe overconfidence
+
+    before = expected_calibration_error(conf, outcome)
+    platt = PlattScaler().fit(conf, outcome)
+    after = expected_calibration_error(platt.transform(conf), outcome)
+
+    assert before > 0.1
+    assert after < 0.02                       # recovered to near-fp16 calibration
+    assert 0.05 < platt.slope < 5.0           # not the diverged ~1e6 slope
+    mapped = platt.transform(np.sort(conf))
+    assert np.all(np.diff(mapped) >= -1e-9)    # ranking preserved

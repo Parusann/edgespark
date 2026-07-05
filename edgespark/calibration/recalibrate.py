@@ -94,17 +94,33 @@ class PlattScaler:
         z = _to_logit(confidence)
         y = np.asarray(outcome, dtype=np.float64).ravel()
         X = np.stack([z, np.ones_like(z)], axis=1)  # [n, 2] -> [slope, bias]
-        w = np.array([1.0, 0.0])
+        w = np.zeros(2)
+        nll = _nll(_sigmoid(X @ w), y)
         for _ in range(max_iter):
             p = _sigmoid(X @ w)
             grad = X.T @ (p - y) / len(y)
-            # Ridge-regularised Hessian keeps the solve well-conditioned when the
-            # calibration set is tiny or the logits are nearly constant.
-            W = p * (1 - p)
+            # Floor the IRLS weights before forming the Hessian. On a badly
+            # over-confident head (the NF4 case) an undamped Newton step overshoots,
+            # the sigmoid saturates, W = p(1-p) collapses to ~0, and the Hessian
+            # degenerates to just the ridge term — sending the next step to ~1e6.
+            # The floor keeps curvature information; the line search below refuses
+            # any step that does not actually decrease the loss.
+            W = np.clip(p * (1 - p), 1e-6, None)
             hess = (X.T * W) @ X / len(y) + 1e-6 * np.eye(2)
             step = np.linalg.solve(hess, grad)
-            w -= step
-            if np.linalg.norm(step) < 1e-8:
+            # Backtracking line search: shrink the step until NLL decreases.
+            t = 1.0
+            while t > 1e-4:
+                cand = w - t * step
+                cand_nll = _nll(_sigmoid(X @ cand), y)
+                if cand_nll <= nll:
+                    break
+                t *= 0.5
+            if cand_nll > nll:  # no descent direction found; converged
+                break
+            w, prev_nll = cand, nll
+            nll = cand_nll
+            if np.linalg.norm(t * step) < 1e-9 or prev_nll - nll < 1e-12:
                 break
         self.slope, self.bias = float(w[0]), float(w[1])
         self.fitted = True
