@@ -40,30 +40,33 @@ _PRECISION = {
     "fp16": dict(
         accept=np.array([0.93, 0.86, 0.78, 0.69, 0.60]),
         gain=1.05, shift=0.00,
-        t_draft_ms=6.5,      # small fp16 drafter
+        t_draft_ms=1.0,      # measured: fp16 drafter forward (399M) on RX 7900 XTX
     ),
     "int8": dict(
         accept=np.array([0.91, 0.84, 0.76, 0.67, 0.58]),
         gain=1.70, shift=0.15,
-        t_draft_ms=5.0,      # INT8 drafter is smaller + faster
+        t_draft_ms=5.0,      # STILL MODELLED: INT8 drafter not measured (no bitsandbytes on Windows-ROCm)
     ),
     "nf4": dict(
         accept=np.array([0.87, 0.80, 0.72, 0.64, 0.55]),
         gain=2.40, shift=0.35,
-        t_draft_ms=4.5,      # 4-bit is smallest
+        t_draft_ms=4.5,      # STILL MODELLED: NF4 drafter not measured (no bitsandbytes on Windows-ROCm)
     ),
 }
 
-# Verifier timing on the target machine (INT8 Qwen3-4B, RX 7900 XTX). A plain
-# decode step is one forward. The speculative verify pass costs a fixed forward
-# plus a per-position term: scoring ell+1 positions means ell+1 projections
-# through the 151,936-way LM head and attention over the block, so the marginal
-# cost per verified position is real and roughly linear. That linear term is what
-# creates an optimum below the full block and makes gating worthwhile. Parameters
-# are measured on the target machine; see bench/timings.md.
-_T_DECODE_MS = 15.5          # baseline: one token per forward
-_T_VERIFY0_MS = 19.0         # verify pass fixed cost (forward + attention over block)
-_T_VERIFY_PER_ELL_MS = 4.2   # marginal cost per extra verified position (LM head)
+# Verifier timing MEASURED on the target machine (RX 7900 XTX, native-Windows
+# ROCm, fp16 Qwen3-4B; GpuTimer / HIP events, synced). See bench/timings.md and
+# runs/hardware/. Two caveats: (1) INT8 was not measurable (no bitsandbytes on
+# this Windows-ROCm stack), so these are fp16 per-op costs; (2) the intrinsic
+# KV-cached verify is ~3.2 ms with a per-position marginal below measurement noise
+# (~0), so on this hardware the gated policy is roughly tied with always-verify-all
+# -- the "dT_verify/dell near zero" outcome this file's header anticipates. The
+# current verifier.block_distribution instead re-encodes the whole prefix (measured
+# ~52.6 ms + 0.37 ms/ell at 225-token ctx); realising the numbers below requires
+# the KV-reuse optimisation flagged in loop/generate.py.
+_T_DECODE_MS = 2.9           # measured: one fp16 decode forward (single token, KV cache)
+_T_VERIFY0_MS = 3.2          # measured: KV-cached per-block verify forward (fixed)
+_T_VERIFY_PER_ELL_MS = 0.0   # measured: per-position marginal below noise (<0.1 ms)
 _DEFAULT_THETA = 0.45
 
 # code is more deterministic than chat, so it accepts a touch more.
