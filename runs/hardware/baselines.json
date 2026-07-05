@@ -1,0 +1,32 @@
+{
+  "hardware": "AMD Radeon RX 7900 XTX (gfx1100, 48 CU)",
+  "host": "Windows 11 (native ROCm) - PyTorch 2.9.1+rocmsdk20260116, HIP 7.2.26024",
+  "measured_utc": "2026-07-05",
+  "single_stream": true,
+  "notes": "llama.cpp baselines via winget ggml.llamacpp b9873, Vulkan backend pinned to the 7900 XTX (GGML_VK_VISIBLE_DEVICES=0). bitsandbytes INT8 is unavailable on this Windows-ROCm stack (Phase-0 gate MISS), so the quantized-verifier baseline is GGUF via llama.cpp rather than bnb-INT8.",
+  "llama_cpp": {
+    "build": "b9873-a4107133a",
+    "backend": "Vulkan (AMD Radeon RX 7900 XTX)",
+    "method_plain": "llama-bench -p 512 -n 128 -r 3 -ngl 999",
+    "method_speculative": "llama-cli -md <draft> --spec-draft-n-max 5 -ngl 999 -ngld 999 -st",
+    "baseline1_plain_decode_tok_s": {
+      "Qwen3-4B-Q4_K_M": 213.79,
+      "Qwen3-4B-Q8_0": 150.95
+    },
+    "prefill_pp512_tok_s": {
+      "Qwen3-4B-Q4_K_M": 4339.05,
+      "Qwen3-4B-Q8_0": 4792.99
+    },
+    "baseline2_speculative_tok_s": {
+      "Qwen3-4B-Q8_0 + Qwen3-0.6B-Q8_0 draft (n_max=5)": 145.5
+    },
+    "speculative_speedup_vs_plain_Q8_0": 0.96,
+    "finding": "Vanilla speculative decoding (0.6B draft -> 4B Q8_0) is ~0.96x on this hardware: draft overhead is not offset by acceptance on these prompts. This is the ordinary-speculative floor EdgeSpark's hidden-state-conditioned semi-AR drafter is meant to beat."
+  },
+  "torch_verifier_fp16": {
+    "stack": "transformers 5.3.0 + PyTorch ROCm, Qwen3-4B fp16, attn=sdpa",
+    "T_decode_ms_single_forward": 2.912,
+    "plain_decode_tok_s_single_forward": 343.39,
+    "note": "Per-op single-token forward latency at short context (GpuTimer / HIP events, synced). Faster than the llama.cpp sustained tg128 rate because it excludes sampling and long-context KV growth; used as the internal per-op constant for bench/simulate.py, not as the headline baseline."
+  }
+}

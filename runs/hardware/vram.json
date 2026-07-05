@@ -1,0 +1,23 @@
+{
+  "hardware": "AMD Radeon RX 7900 XTX",
+  "total_vram_MB": 24560,
+  "total_vram_GB_decimal": 25.75,
+  "method": "torch.cuda.mem_get_info / torch.cuda.max_memory_allocated (rocm-smi is a Linux ROCm tool, absent on this native-Windows stack)",
+  "measured_MB": {
+    "verifier_fp16_Qwen3_4B": 7672.3,
+    "drafter_fp16": 1772.8,
+    "peak_generate_fp16_verifier_plus_drafter": 9540.1,
+    "free_after_verifier_load": 16723.8
+  },
+  "gguf_on_disk_MB": {
+    "Qwen3-4B-Q8_0": 4082,
+    "Qwen3-4B-Q4_K_M": 2382,
+    "Qwen3-0.6B-Q8_0": 640
+  },
+  "not_measured": {
+    "verifier_int8": "bitsandbytes unavailable on Windows-ROCm (Phase-0 gate MISS) - Tier 1",
+    "verifier_nf4": "bitsandbytes unavailable - Tier 1",
+    "drafter_int8_nf4": "bitsandbytes unavailable - Tier 1"
+  },
+  "note": "fp16 verifier (7.7 GB) + fp16 drafter (1.8 GB) with generation peak 9.5 GB leaves ~15 GB headroom on the 24 GB card, so the full-precision pair fits comfortably. INT8/NF4 configs need bitsandbytes (Tier 1) and cannot be measured on this stack; the GGUF sizes above are the on-disk quantized footprints of the llama.cpp verifier/draft used for the baselines."
+}
