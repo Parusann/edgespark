@@ -33,19 +33,22 @@ def train(config: DrafterConfig, cache_dir, steps, out_path, batch_size=4, lr=3e
         drafter.backbone.decoder.gradient_checkpointing = True
 
     opt = AdamW(drafter.parameters(), lr=lr, betas=(0.9, 0.95), weight_decay=0.01)
-    scaler = torch.cuda.amp.GradScaler(enabled=config.precision_train == "bf16")
+    # GradScaler is an fp16 tool; bf16 shares fp32's exponent range and needs no
+    # loss scaling, so it is only enabled for an fp16 run.
+    scaler = torch.cuda.amp.GradScaler(enabled=config.precision_train == "fp16")
 
     drafter.train()
     step = 0
     writer = _tensorboard(out_path)
-    for batch in _batches(stream_cache(cache_dir), batch_size, device):
+    for batch in _batches(stream_cache(cache_dir), batch_size, device,
+                          config.target_layer_ids, config.block_size):
         if step >= steps:
             break
         with torch.autocast(device_type="cuda", dtype=torch.bfloat16,
                             enabled=config.precision_train == "bf16"):
-            logits, conf_logit = drafter(batch["hidden_by_layer"], batch["prefix_last"])
+            logits, conf_logit, block_feature = drafter(batch["hidden_by_layer"], batch["prefix_last"])
             loss, parts = drafter_loss(
-                logits, batch["block_hidden"], batch["target_tokens"],
+                logits, block_feature, batch["target_tokens"],
                 batch["target_hidden"], conf_logit, config,
             )
         opt.zero_grad(set_to_none=True)
@@ -62,17 +65,65 @@ def train(config: DrafterConfig, cache_dir, steps, out_path, batch_size=4, lr=3e
     return out_path
 
 
-def _batches(shard_stream, batch_size, device):
-    """Assemble training batches from streamed cache items.
+def _batches(shard_stream, batch_size, device, layer_ids, block_size):
+    """Assemble training batches from the streamed hidden-state cache.
 
-    Placeholder collation: a production version aligns block windows, target
-    tokens and verifier hidden states from the cached sequences. Kept explicit so
-    the streaming contract (one shard resident at a time) is visible.
+    Each streamed item is ``(hidden, ids)`` where ``hidden`` is
+    ``[num_layers, seq, Hv]`` (the selected verifier layers, float16) and ``ids``
+    is the ``[seq]`` verifier token sequence. A block window slides over each
+    sequence: conditioning on the hidden state at anchor position ``t`` (ctx=1,
+    matching the inference loop, which drafts from the single last-context
+    hidden), the drafter predicts the ``block_size`` tokens at ``t+1 .. t+block``.
+
+    Yields dicts with:
+      * ``hidden_by_layer``  {lid: [b, 1, Hv]}   fusion inputs at the anchor
+      * ``prefix_last``      [b]                 anchor token id (long)
+      * ``target_tokens``    [b, block]          next verifier tokens (CE / accept)
+      * ``target_hidden``    [b, block, Hv]      verifier hidden at block positions
+                                                 (L1 target; deepest cached layer)
+
+    Streaming contract: the loader holds one shard/item at a time, so the full
+    cache never enters RAM. ``block_hidden`` and the confidence logit are not
+    batch fields -- they come from the drafter's own forward pass.
     """
-    raise NotImplementedError(
-        "wire cache collation to your pair format; see data/build_cache.py manifest"
-    )
-    yield  # pragma: no cover
+    import numpy as np
+    import torch
+
+    layer_ids = list(layer_ids)
+    deep = len(layer_ids) - 1  # deepest cached layer -> feature-regression target
+
+    def _fresh():
+        return {"hidden": {lid: [] for lid in layer_ids}, "prefix": [], "tok": [], "hid": []}
+
+    def _emit(buf):
+        hidden_by_layer = {
+            lid: torch.from_numpy(np.stack(buf["hidden"][lid])).to(device=device, dtype=torch.float32)
+            for lid in layer_ids
+        }
+        return {
+            "hidden_by_layer": hidden_by_layer,  # each [b, 1, Hv]
+            "prefix_last": torch.tensor(buf["prefix"], device=device, dtype=torch.long),
+            "target_tokens": torch.from_numpy(np.stack(buf["tok"])).to(device=device, dtype=torch.long),
+            "target_hidden": torch.from_numpy(np.stack(buf["hid"])).to(device=device, dtype=torch.float32),
+        }
+
+    buf, n = _fresh(), 0
+    for hidden, ids in shard_stream:
+        hidden = np.asarray(hidden)
+        ids = np.asarray(ids).ravel()
+        seq = int(hidden.shape[1])
+        for t in range(0, seq - block_size):
+            for k, lid in enumerate(layer_ids):
+                buf["hidden"][lid].append(hidden[k, t:t + 1, :].astype(np.float32))  # [1, Hv]
+            buf["prefix"].append(int(ids[t]))
+            buf["tok"].append(ids[t + 1:t + 1 + block_size].astype(np.int64))  # [block]
+            buf["hid"].append(hidden[deep, t + 1:t + 1 + block_size, :].astype(np.float32))  # [block, Hv]
+            n += 1
+            if n >= batch_size:
+                yield _emit(buf)
+                buf, n = _fresh(), 0
+    if n > 0:
+        yield _emit(buf)
 
 
 def _tensorboard(out_path):

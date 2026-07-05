@@ -40,8 +40,13 @@ def build(model_name, pairs_path, out_dir, target_layer_ids, shard_size=512, max
         if not shard:
             return
         path = out_dir / f"shard_{shard_idx:05d}.npz"
-        # float16 keeps the cache small; the drafter upcasts as needed.
-        np.savez_compressed(path, **{f"item_{i}": arr for i, arr in enumerate(shard)})
+        # float16 hidden keeps the cache small (the drafter upcasts); the int32
+        # token ids ride alongside so the collator can build prefix/target tokens.
+        payload = {}
+        for i, (h, ids_i) in enumerate(shard):
+            payload[f"hidden_{i}"] = h
+            payload[f"ids_{i}"] = ids_i
+        np.savez_compressed(path, **payload)
         manifest.append({"shard": path.name, "count": len(shard)})
         shard_idx += 1
         shard = []
@@ -58,7 +63,8 @@ def build(model_name, pairs_path, out_dir, target_layer_ids, shard_size=512, max
                 out.hidden_states[lid][0].to(torch.float16).cpu().numpy()
                 for lid in target_layer_ids
             ])
-            shard.append(sel)
+            ids_np = ids[0].to(torch.int32).cpu().numpy()  # [seq] verifier tokens
+            shard.append((sel, ids_np))
             n += 1
             if len(shard) >= shard_size:
                 flush()
@@ -71,15 +77,21 @@ def build(model_name, pairs_path, out_dir, target_layer_ids, shard_size=512, max
 
 
 def stream_cache(cache_dir):
-    """Yield cached hidden-state arrays one shard at a time (never all in RAM)."""
+    """Yield ``(hidden, ids)`` per cached item, one shard at a time (never all in RAM).
+
+    ``hidden`` is ``[num_layers_kept, seq, Hv]`` float16 selected-layer states and
+    ``ids`` is the ``[seq]`` int token sequence written beside it.
+    """
     import numpy as np
 
     cache_dir = Path(cache_dir)
     manifest = json.loads((cache_dir / "manifest.json").read_text(encoding="utf-8"))
     for entry in manifest["shards"]:
         with np.load(cache_dir / entry["shard"]) as data:
-            for key in data.files:
-                yield data[key]
+            i = 0
+            while f"hidden_{i}" in data.files:
+                yield data[f"hidden_{i}"], data[f"ids_{i}"]
+                i += 1
 
 
 def main():

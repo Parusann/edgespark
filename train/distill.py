@@ -26,13 +26,34 @@ def load_teacher(teacher_id: str, device: str):
 
     Confirmed viable in Phase 0 (spec section 16). If no compatible checkpoint
     loads on ROCm, fall back to Path B (``train_drafter.py``).
-    """
-    import torch  # noqa: F401
 
-    raise NotImplementedError(
-        "point this at the DeepSpec release layout for your verifier; "
-        "if none loads on ROCm, use train/train_drafter.py (Path B)"
-    )
+    Accepts a local ``.pt`` saved in EdgeSpark's own layout
+    (``{"state_dict": ..., "config": {...}}``) -- e.g. a DeepSpec / EAGLE-3
+    drafter already converted to this architecture. A raw upstream release with a
+    different module layout must be converted first; if none loads on ROCm, use
+    Path B.
+    """
+    import torch
+    from pathlib import Path
+
+    from edgespark.drafter import EdgeSparkDrafter
+    from edgespark.utils.config import DrafterConfig
+
+    path = Path(teacher_id)
+    if not path.exists():
+        raise FileNotFoundError(
+            f"teacher checkpoint {teacher_id!r} not found. Path A needs a released "
+            "drafter saved in EdgeSpark layout ({'state_dict':..., 'config':...}); "
+            "if none loads on ROCm, use train/train_drafter.py (Path B)."
+        )
+    ckpt = torch.load(path, map_location=device)
+    cfgd = dict(ckpt.get("config") or {})
+    if "target_layer_ids" in cfgd:
+        cfgd["target_layer_ids"] = tuple(cfgd["target_layer_ids"])
+    teacher = EdgeSparkDrafter(DrafterConfig(**cfgd) if cfgd else DrafterConfig()).to(device)
+    teacher.load_state_dict(ckpt["state_dict"])
+    teacher.eval()
+    return teacher
 
 
 def distill(config: DrafterConfig, teacher_id: str, cache_dir, steps, out_path,
@@ -50,15 +71,17 @@ def distill(config: DrafterConfig, teacher_id: str, cache_dir, steps, out_path,
     opt = AdamW(student.parameters(), lr=3e-4, betas=(0.9, 0.95))
 
     student.train()
-    for step, batch in enumerate(_distill_batches(cache_dir, device)):
+    for step, batch in enumerate(
+        _distill_batches(cache_dir, device, config.target_layer_ids, config.block_size)
+    ):
         if step >= steps:
             break
         with torch.no_grad():
             t_logits = teacher(batch["hidden_by_layer"], batch["prefix_last"])[0]
-        s_logits, conf_logit = student(batch["hidden_by_layer"], batch["prefix_last"])
+        s_logits, conf_logit, s_feature = student(batch["hidden_by_layer"], batch["prefix_last"])
 
         base, parts = drafter_loss(
-            s_logits, batch["block_hidden"], batch["target_tokens"],
+            s_logits, s_feature, batch["target_tokens"],
             batch["target_hidden"], conf_logit, config,
         )
         kl = F.kl_div(
@@ -74,9 +97,12 @@ def distill(config: DrafterConfig, teacher_id: str, cache_dir, steps, out_path,
     return out_path
 
 
-def _distill_batches(cache_dir, device):
-    raise NotImplementedError("share collation with train/train_drafter.py")
-    yield  # pragma: no cover
+def _distill_batches(cache_dir, device, layer_ids, block_size, batch_size=4):
+    """Shared collation with Path B: stream the cache and yield training batches."""
+    from data.build_cache import stream_cache
+    from train.train_drafter import _batches
+
+    yield from _batches(stream_cache(cache_dir), batch_size, device, layer_ids, block_size)
 
 
 def main():
