@@ -158,6 +158,8 @@ recalibration and the policy are the same result — see
 
 Full tables, provenance, and the reproduce-it commands: **[docs/RESULTS.md](docs/RESULTS.md)**.
 
+**Technical preprint:** a 10-page writeup — [**paper/edgespark.pdf**](paper/edgespark.pdf) ([LaTeX source](paper/edgespark.tex)) — with the exactness theorem and proof sketch, the calibration study, and results split explicitly into measured vs. modelled.
+
 ## Repository layout
 
 ```
