@@ -71,6 +71,12 @@ class EdgeSparkDrafter:
                     with_markov=config.confidence_head_with_markov,
                     markov_feat_size=draft_hidden,
                 )
+                # Feature-regression head. The L1 distillation target is the
+                # verifier's Hv-wide hidden state, but the shrunk backbone works in
+                # draft_hidden (<= 1024). Project the block hidden up to the
+                # verifier width so drafter_loss can regress it onto target_hidden
+                # (EAGLE-style feature distillation) even when draft_hidden < Hv.
+                self.regress = nn.Linear(draft_hidden, vhidden)
                 # Markov features for the confidence head: reuse the backbone
                 # hidden shifted by one position (what "the previous slot" saw).
                 self._recalibrator = None
@@ -97,12 +103,15 @@ class EdgeSparkDrafter:
                 logits = logits + bias
                 markov_feat = block_hidden  # confidence conditioned on the same hidden
                 conf_logit = self.confidence(block_hidden, markov_feat, return_logits=True)
-                return logits, conf_logit
+                # Verifier-width feature prediction for the L1 regression term in
+                # drafter_loss. Inference (draft) ignores it; training consumes it.
+                block_feature = self.regress(block_hidden)  # [b, block, vhidden]
+                return logits, conf_logit, block_feature
 
             @torch.no_grad()
             def draft(self, hidden_by_layer, accepted_prefix) -> DraftBlock:
                 prefix_last = accepted_prefix[:, -1] if accepted_prefix.dim() == 2 else accepted_prefix
-                logits, conf_logit = self.forward(hidden_by_layer, prefix_last)
+                logits, conf_logit, _ = self.forward(hidden_by_layer, prefix_last)
                 probs = torch.softmax(logits.float(), dim=-1)[0]  # [block, vocab]
                 tokens = probs.argmax(dim=-1)  # greedy proposal
                 raw_conf = torch.sigmoid(conf_logit)[0]  # [block]

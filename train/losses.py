@@ -49,15 +49,23 @@ def drafter_loss(
     ).reshape(b, block)
     ce = (ce * w).sum(dim=1).mean()
 
-    # hidden-state L1 regression (dominant term)
-    l1 = F.l1_loss(block_hidden, target_hidden, reduction="none").mean(dim=-1)  # [b, block]
+    # hidden-state L1 regression (dominant term). Cast the target to the
+    # prediction dtype so the term is well-defined under bf16 autocast.
+    l1 = F.l1_loss(
+        block_hidden, target_hidden.to(block_hidden.dtype), reduction="none"
+    ).mean(dim=-1)  # [b, block]
     l1 = (l1 * w).sum(dim=1).mean()
 
     # confidence: BCE against the true accept label (argmax match)
     with torch.no_grad():
         accept = (block_logits.argmax(dim=-1) == target_tokens).float()  # [b, block]
-    conf = F.binary_cross_entropy_with_logits(confidence_logit, accept, reduction="none")
+    conf = F.binary_cross_entropy_with_logits(
+        confidence_logit, accept.to(confidence_logit.dtype), reduction="none"
+    )
     conf = (conf * w).sum(dim=1).mean()
 
     total = config.ce_loss_alpha * ce + config.l1_loss_alpha * l1 + config.confidence_head_alpha * conf
-    return total, {"ce": float(ce), "l1": float(l1), "confidence": float(conf), "total": float(total)}
+    return total, {
+        "ce": float(ce.detach()), "l1": float(l1.detach()),
+        "confidence": float(conf.detach()), "total": float(total.detach()),
+    }
