@@ -122,8 +122,10 @@ def simulate_calibration(precision: str, n: int = 60000, seed: int = 0) -> Calib
         brier_raw=brier_score(conf_eval, out_eval),
         brier_recalibrated=brier_score(recal, out_eval),
         temperature=scaler.temperature,
-        curve_raw=reliability_curve(conf_eval, out_eval, n_bins=12),
-        curve_recalibrated=reliability_curve(recal, out_eval, n_bins=12),
+        # Equal-mass (quantile) bins for the plotted curves so a sparse tail bin
+        # can't spike the diagram; ECE above still uses standard uniform bins.
+        curve_raw=reliability_curve(conf_eval, out_eval, n_bins=10, strategy="quantile"),
+        curve_recalibrated=reliability_curve(recal, out_eval, n_bins=10, strategy="quantile"),
         confidence=conf_eval,
         outcome=out_eval,
     )
