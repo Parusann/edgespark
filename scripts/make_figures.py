@@ -102,7 +102,7 @@ def throughput_figure(results, out: Path):
     c = Canvas(720, 380)
     c.text(40, 30, "End-to-end throughput: EdgeSpark vs. vanilla quantized baseline",
            size=17, fill=INK, weight="700")
-    c.text(40, 50, "Qwen3-4B verifier (INT8) on RX 7900 XTX · single stream · gated verification · output identical to baseline",
+    c.text(40, 50, "DESIGN-TIME MODEL (not measured) · Qwen3-4B INT8 verifier · single stream · gated verification · output identical to baseline",
            size=12, fill=MUTED)
 
     x0, y0, w, h = 70, 80, 600, 220
@@ -136,7 +136,7 @@ def throughput_figure(results, out: Path):
     c.text(x0 + 24, y0 + 16, "code", size=11, fill=INK)
     c.rect(x0 + 74, y0 + 6, 12, 12, GOOD, rx=2)
     c.text(x0 + 92, y0 + 16, "chat", size=11, fill=INK)
-    c.text(40, 366, "Primary success criterion: ≥25% over baseline. All variants clear it; INT8 code = +43%.", size=11, fill=MUTED)
+    c.text(40, 366, "Modelled projection (bench/simulate.py). On hardware: correctness + baselines measured; quantized run pending — see docs/RESULTS.md §0.", size=11, fill=MUTED)
     save(c, out, "Throughput")
 
 
@@ -175,7 +175,7 @@ def policy_figure(results, out: Path):
     c.text(x0 + 24, y0 + 16, "always-verify-all (ℓ=5)", size=11, fill=INK)
     c.rect(x0 + 200, y0 + 6, 12, 12, ACCENT, rx=2)
     c.text(x0 + 218, y0 + 16, "confidence-gated ℓ", size=11, fill=INK)
-    c.text(40, 366, "Gating raises tokens/sec at every precision despite a lower τ — it spends less verifier time per round.", size=11, fill=MUTED)
+    c.text(40, 366, "Modelled. On the RX 7900 XTX the per-position verify cost ≈ 0, so gating ties always-verify-all — see docs/RESULTS.md §0.", size=11, fill=MUTED)
     save(c, out, "Policy ablation")
 
 

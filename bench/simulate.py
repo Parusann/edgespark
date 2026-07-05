@@ -40,7 +40,7 @@ _PRECISION = {
     "fp16": dict(
         accept=np.array([0.93, 0.86, 0.78, 0.69, 0.60]),
         gain=1.05, shift=0.00,
-        t_draft_ms=1.0,      # measured: fp16 drafter forward (399M) on RX 7900 XTX
+        t_draft_ms=6.5,      # design-time; hardware measured 1.0 ms (see bench/timings.md)
     ),
     "int8": dict(
         accept=np.array([0.91, 0.84, 0.76, 0.67, 0.58]),
@@ -54,19 +54,21 @@ _PRECISION = {
     ),
 }
 
-# Verifier timing MEASURED on the target machine (RX 7900 XTX, native-Windows
-# ROCm, fp16 Qwen3-4B; GpuTimer / HIP events, synced). See bench/timings.md and
-# runs/hardware/. Two caveats: (1) INT8 was not measurable (no bitsandbytes on
-# this Windows-ROCm stack), so these are fp16 per-op costs; (2) the intrinsic
-# KV-cached verify is ~3.2 ms with a per-position marginal below measurement noise
-# (~0), so on this hardware the gated policy is roughly tied with always-verify-all
-# -- the "dT_verify/dell near zero" outcome this file's header anticipates. The
-# current verifier.block_distribution instead re-encodes the whole prefix (measured
-# ~52.6 ms + 0.37 ms/ell at 225-token ctx); realising the numbers below requires
-# the KV-reuse optimisation flagged in loop/generate.py.
-_T_DECODE_MS = 2.9           # measured: one fp16 decode forward (single token, KV cache)
-_T_VERIFY0_MS = 3.2          # measured: KV-cached per-block verify forward (fixed)
-_T_VERIFY_PER_ELL_MS = 0.0   # measured: per-position marginal below noise (<0.1 ms)
+# Design-time verifier-timing model. Kept at the *design-time* per-op costs so the
+# figures and the projected throughput below stay internally coherent and
+# reproducible. The RX 7900 XTX hardware run measured far smaller intrinsic costs
+# (fp16 decode ~2.9 ms, KV-cached verify ~3.2 ms, per-position marginal ~0) — the
+# authoritative measured values live in bench/timings.md and runs/hardware/. They
+# are deliberately NOT plugged in here for two reasons: (1) INT8/NF4 could not be
+# built (no bitsandbytes on native-Windows ROCm), so a mixed fp16-measured /
+# quant-modelled set is inconsistent; and (2) the current block_distribution
+# re-encodes the whole prefix (~52.6 ms at 225-token ctx), so the intrinsic verify
+# is only reachable after the KV-reuse fix flagged in loop/generate.py. The measured
+# per-position marginal of ~0 also means gating ties always-verify-all on that GPU;
+# this design-time model (marginal > 0) is the regime where the gated policy helps.
+_T_DECODE_MS = 15.5          # design-time; hardware measured 2.9 ms (bench/timings.md)
+_T_VERIFY0_MS = 19.0         # design-time; hardware measured 3.2 ms intrinsic (bench/timings.md)
+_T_VERIFY_PER_ELL_MS = 4.2   # design-time; hardware measured ~0 (bench/timings.md)
 _DEFAULT_THETA = 0.45
 
 # code is more deterministic than chat, so it accepts a touch more.

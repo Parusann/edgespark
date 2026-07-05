@@ -1,31 +1,56 @@
 # Results
 
-> **Provenance.** The numbers below are the *modelled reference run*
-> (`bench/simulate.py`, dumped to [`runs/reference/summary.json`](../runs/reference/summary.json)).
-> The calibration figures are produced by the **real** measurement and
-> recalibration code (`edgespark.calibration`) on simulated confidence data — the
-> same code path a hardware run takes. Reproduce the throughput and VRAM numbers
-> on the RX 7900 XTX with `python scripts/run_benchmark.py --hardware`; the model
-> is calibrated against per-op timings in [`bench/timings.md`](../bench/timings.md).
+> **Provenance.** Two layers of results. **Measured on the RX 7900 XTX**
+> (native-Windows ROCm, 2026-07-05 — see [`runs/hardware/`](../runs/hardware/)): the
+> exactness invariant on the real Qwen3-4B, fp16 per-op latencies, VRAM, and
+> llama.cpp baselines. **Modelled** (`bench/simulate.py` →
+> [`summary.json`](../runs/reference/summary.json)): the INT8/NF4 throughput, the
+> gated-policy ablation, and the calibration study — because bitsandbytes is
+> unavailable on this Windows-ROCm stack, so no quantized drafter could be built or
+> trained yet. The calibration *figures* are produced by the **real**
+> `edgespark.calibration` code on simulated confidence data (the same path a
+> hardware run takes). §0 separates what is measured from what is modelled.
 
-## Headline
+## 0. Hardware validation status
 
-| Result | Criterion | Status |
+| Claim | State | Evidence |
 |---|---|---|
-| End-to-end throughput, INT8 drafter, code | ≥ 25% over vanilla quantized baseline | **+43%** ✅ |
-| End-to-end throughput, INT8 drafter, chat | ≥ 25% | **+36%** ✅ |
-| Confidence ECE recovered by recalibration (NF4) | near fp16 | **0.166 → 0.014** ✅ |
-| Confidence-gated policy vs. always-verify-all | higher tok/s | **beats it at every precision** ✅ |
-| Verifier + drafter + KV in 24 GB | fits with headroom | **9.4 GB used, ~15 GB free** ✅ |
-| Output vs. deployed verifier | token-for-token identical (greedy) | **exact** ✅ |
+| Output identical to the verifier (greedy) | ✅ **measured on real Qwen3-4B** | `loop/generate.py` end-to-end, `exact_ok=true` for any drafter quality |
+| Fits 24 GB | ✅ **measured** | fp16 verifier 7.7 GB + drafter 1.8 GB, 9.5 GB generation peak, ~15 GB free ([vram.json](../runs/hardware/vram.json)) |
+| Baselines | ✅ **measured** | llama.cpp Q4_K_M 214 tok/s, Q8_0 151 tok/s; vanilla speculative 0.96× ([baselines.json](../runs/hardware/baselines.json)) |
+| fp16 per-op latency | ✅ **measured** | decode 2.9 ms, intrinsic verify 3.2 ms, draft 1.0 ms ([timings.md](../bench/timings.md)) |
+| INT8 / NF4 throughput | 🔶 **modelled** | no bitsandbytes on native-Windows ROCm (Phase-0 gate MISS) |
+| Calibration study (ECE / recalibration) | 🔶 **modelled** | needs a trained quantized drafter; the method itself is code-tested (§2) |
+| Gated policy beats always-verify-all | ⚠️ **modelled only** | on-hardware the per-ℓ verify cost is ≈ 0, so gating **ties** always-verify-all |
+| End-to-end speculative speedup | ⏳ **pending** | current `block_distribution` re-encodes the prefix (prefill-bound ~52.6 ms); needs the KV-reuse fix |
 
-## 1. Throughput
+Sections 1–3 and 5 below are the **design-time model** (`bench/simulate.py`), kept
+as a coherent projection and labelled as such — the target the hardware run is
+working toward, not a claim of measured throughput. Section 4 (exactness) and the
+fp16 VRAM figures are measured.
 
-![Throughput](assets/throughput.svg)
+## Design-time targets
 
-Single stream, Qwen3-4B INT8 verifier, RX 7900 XTX, greedy decoding, gated
-verification. Baseline is the vanilla quantized verifier with no speculation
-(64.5 tok/s).
+Whether the **model** meets each success criterion (see §0 for what is measured on
+hardware vs. still modelled):
+
+| Result | Criterion | Model / status |
+|---|---|---|
+| End-to-end throughput, INT8 drafter, code | ≥ 25% over vanilla quantized baseline | +43% · 🔶 modelled |
+| End-to-end throughput, INT8 drafter, chat | ≥ 25% | +36% · 🔶 modelled |
+| Confidence ECE recovered by recalibration (NF4) | near fp16 | 0.166 → 0.014 · 🔶 modelled |
+| Confidence-gated policy vs. always-verify-all | higher tok/s | wins · ⚠️ ties on this GPU |
+| Verifier + drafter + KV in 24 GB | fits with headroom | ✅ measured 9.5 GB peak, ~15 GB free |
+| Output vs. deployed verifier | token-for-token identical (greedy) | ✅ **measured on real Qwen3-4B** |
+
+## 1. Throughput (modelled)
+
+![Throughput — design-time model](assets/throughput.svg)
+
+**Design-time model** (§0) — single stream, Qwen3-4B INT8 verifier, greedy
+decoding, gated verification; baseline is the vanilla quantized verifier with no
+speculation (64.5 tok/s). Not yet measured on hardware: INT8 needs bitsandbytes,
+and end-to-end throughput needs the KV-reuse fix (today's verify is prefill-bound).
 
 | Drafter precision | code (tok/s) | code speedup | chat (tok/s) | chat speedup |
 |---|---|---|---|---|
@@ -63,7 +88,13 @@ positive result the project set out to find (spec §17).
 The confidence-gated policy stops verifying once cumulative predicted survival
 falls below θ = 0.45, rather than always verifying the full block. It accepts a
 *lower* τ per round but spends much less verifier time, so tokens/sec rises at
-every precision.
+every precision — **in this design-time model**.
+
+> ⚠️ **Hardware caveat (§0).** The gating win depends on the verifier's per-position
+> cost growing with ℓ. On the RX 7900 XTX that marginal measured ≈ 0 (a 4B forward
+> is dominated by the 36-layer weight sweep), so gating **ties** always-verify-all
+> there. The result holds on hardware where verify scales with ℓ; it stays
+> exactness-preserving either way.
 
 | Drafter | gated ℓ | gated τ | always-verify-all ℓ | always τ | gated wins? |
 |---|---|---|---|---|---|
@@ -95,11 +126,14 @@ Monte-Carlo unbiasedness test at TV < 0.02 (37 tests across the full numpy suite
 
 ![VRAM breakdown](assets/vram_breakdown.svg)
 
-| Configuration | Total | Headroom in 24 GB |
-|---|---|---|
-| fp16 verifier + INT8 drafter | 12.9 GB | 11.1 GB |
-| INT8 verifier + INT8 drafter | 9.4 GB | 14.6 GB |
-| INT8 verifier + NF4 drafter | 9.1 GB | 14.9 GB |
+| Configuration | Total | Headroom in 24 GB | Source |
+|---|---|---|---|
+| **fp16 verifier + fp16 drafter** | **9.5 GB peak** | **~15 GB free** | ✅ **measured** (short ctx; [vram.json](../runs/hardware/vram.json)) |
+| fp16 verifier + INT8 drafter | 12.9 GB | 11.1 GB | 🔶 modelled (~8k KV) |
+| INT8 verifier + INT8 drafter | 9.4 GB | 14.6 GB | 🔶 modelled (~8k KV) |
+| INT8 verifier + NF4 drafter | 9.1 GB | 14.9 GB | 🔶 modelled (~8k KV) |
 
-Comfortable room for an 8B verifier (quantized) or a much longer context —
-consistent with the feasibility budget in spec §11.
+The measured fp16+fp16 peak (9.5 GB, verifier 7.7 + drafter 1.8) is at short
+context; the modelled rows add ~4 GB of KV cache + activations at ~8k context.
+Either way the pair sits well inside 24 GB — comfortable room for an 8B verifier
+(quantized) or a much longer context (spec §11).

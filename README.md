@@ -40,14 +40,27 @@ the drafter has to be quantized to INT8/4-bit to fit — and:
 
 </div>
 
-| | Target | Result |
-|---|---|---|
-| **Throughput** (INT8 drafter, code) | ≥ 25% over vanilla quantized baseline | **+43%** ✅ |
-| **Throughput** (INT8 drafter, chat) | ≥ 25% | **+36%** ✅ |
-| **Calibration** (NF4 confidence head) | recover ECE toward fp16 | **0.166 → 0.014** ✅ |
-| **Policy** (confidence-gated ℓ) | beat always-verify-all | **wins at every precision** ✅ |
-| **Memory** (verifier + drafter + KV) | fit 24 GB | **9.4 GB, ~15 GB free** ✅ |
-| **Output** | token-for-token identical (greedy) | **exact** ✅ |
+| Result | Target | Model | On the RX 7900 XTX |
+|---|---|---|---|
+| **Output identical** (greedy) | token-for-token | exact | ✅ **validated on real Qwen3-4B** (`exact_ok=true`) |
+| **Memory** (verifier + drafter + KV) | fit 24 GB | 9.4 GB | ✅ **measured 9.5 GB peak, ~15 GB free** (fp16) |
+| **Throughput** (INT8 drafter, code / chat) | ≥ 25% over baseline | +43% / +36% | 🔶 **modelled** — quantized run pending¹ |
+| **Calibration** (NF4 head) | recover ECE → fp16 | 0.166 → 0.014 | 🔶 **modelled** — pending¹ |
+| **Policy** (confidence-gated ℓ) | beat always-verify-all | wins | ⚠️ **ties on this GPU** — verify marginal ≈ 0² |
+
+> **Hardware validation (RX 7900 XTX · native-Windows ROCm · 2026-07-05).** The
+> correctness invariant is proven on the real model: `loop/generate.py` runs
+> Qwen3-4B end-to-end and emits output token-for-token identical to the verifier
+> alone, for any drafter quality. Also measured: fp16 per-op latencies, VRAM
+> (9.5 GB peak), and llama.cpp baselines (Q4_K_M 214 tok/s, Q8_0 151 tok/s —
+> ordinary speculative decoding is 0.96× here, the floor EdgeSpark must beat).
+> ¹INT8/NF4 and the calibration study are **modelled**: bitsandbytes is unavailable
+> on this native-Windows ROCm stack (a Linux-ROCm box or a GGUF/AWQ path unblocks
+> them, and no drafter has been trained yet). ²On this GPU the per-position verify
+> cost is below noise, so the gated policy **ties** always-verify-all; the modelled
+> gating win needs a regime where verify grows with ℓ, and the end-to-end speedup
+> awaits the KV-reuse fix flagged in `loop/generate.py` (today's verify re-encodes
+> the prefix). Full detail: [runs/hardware/NOTES.md](runs/hardware/NOTES.md).
 
 > Throughput/VRAM numbers are the modelled reference run (`bench/simulate.py`,
 > driven by measured per-op timings); reproduce them on the 7900 XTX with
