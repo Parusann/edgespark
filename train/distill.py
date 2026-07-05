@@ -33,8 +33,9 @@ def load_teacher(teacher_id: str, device: str):
     different module layout must be converted first; if none loads on ROCm, use
     Path B.
     """
-    import torch
     from pathlib import Path
+
+    import torch
 
     from edgespark.drafter import EdgeSparkDrafter
     from edgespark.utils.config import DrafterConfig
