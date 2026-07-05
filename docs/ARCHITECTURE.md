@@ -59,7 +59,7 @@ tested without a GPU. The torch modules are the neural machinery that produces t
 distributions those algorithms consume. This is deliberate:
 
 - The correctness-critical code (acceptance, calibration) is testable, auditable,
-  and CI-runnable on any machine — see the 35-check exactness suite.
+  and CI-runnable on any machine — see the 18-check exactness suite.
 - The numpy `reference.py` loop is the executable specification the torch
   `generate.py` loop must match, so "does the GPU loop still do the right thing?"
   has a concrete answer.

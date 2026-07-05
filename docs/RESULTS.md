@@ -88,8 +88,8 @@ without ever touching the accept/reject decision, so output is unchanged.
 Greedy EdgeSpark output is token-for-token identical to the verifier decoding on
 its own, for any drafter quality and any verification length. Stochastic decoding
 is distribution-identical (the acceptance rule is unbiased). Both are enforced in
-[`tests/test_exactness.py`](../tests/test_exactness.py) — 35 checks including a
-Monte-Carlo unbiasedness test at TV < 0.02.
+[`tests/test_exactness.py`](../tests/test_exactness.py) — 18 checks including a
+Monte-Carlo unbiasedness test at TV < 0.02 (37 tests across the full numpy suite).
 
 ## 5. VRAM
 
@@ -97,7 +97,7 @@ Monte-Carlo unbiasedness test at TV < 0.02.
 
 | Configuration | Total | Headroom in 24 GB |
 |---|---|---|
-| fp16 verifier + INT8 drafter | 13.3 GB | 10.7 GB |
+| fp16 verifier + INT8 drafter | 12.9 GB | 11.1 GB |
 | INT8 verifier + INT8 drafter | 9.4 GB | 14.6 GB |
 | INT8 verifier + NF4 drafter | 9.1 GB | 14.9 GB |
 

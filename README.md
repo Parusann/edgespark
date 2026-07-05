@@ -8,7 +8,7 @@
 ![Python](https://img.shields.io/badge/python-3.10%2B-blue)
 ![ROCm](https://img.shields.io/badge/ROCm-7.x%20gfx1100-ED1C24?logo=amd&logoColor=white)
 ![License](https://img.shields.io/badge/license-MIT-green)
-![Tests](https://img.shields.io/badge/exactness%20suite-35%20checks-brightgreen)
+![Tests](https://img.shields.io/badge/exactness%20suite-18%20checks-brightgreen)
 
 *Same local model. Same machine. Faster. Provably the same output.*
 
@@ -77,7 +77,7 @@ cd edgespark
 
 # 1. The correctness-critical core is pure numpy — it runs anywhere.
 pip install numpy pyyaml pytest
-pytest -q                                    # 35-check exactness suite + calibration + policy
+pytest -q                                    # 37 tests: 18-check exactness suite + calibration + policy
 
 # 2. See the whole story without a GPU (toy LMs, real latency model):
 python demo/server.py                        # open http://127.0.0.1:8000
