@@ -39,3 +39,13 @@ Thumbs.db
 # Local agent tooling (never commit)
 .claude/
 .mcp.json
+
+# LaTeX build artifacts (keep the .tex, .bib, and the compiled .pdf)
+*.aux
+*.log
+*.bbl
+*.blg
+*.out
+*.synctex.gz
+*.fls
+*.fdb_latexmk
