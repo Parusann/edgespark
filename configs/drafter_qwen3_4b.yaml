@@ -6,7 +6,7 @@ target_model: Qwen/Qwen3-4B
 # than DSpark's 7 so less draft is wasted when a block is rejected early.
 block_size: 5
 
-# 2-3 draft layers instead of DSpark's 5 — smaller, faster, less VRAM.
+# 2-3 draft layers instead of DSpark's 5, smaller, faster, less VRAM.
 num_draft_layers: 3
 
 # Hidden-state fusion sources. Subsampled from DSpark's [1, 9, 17, 25, 33] to 3.

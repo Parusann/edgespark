@@ -4,11 +4,11 @@ llama.cpp has excellent HIP/ROCm support and *built-in* speculative decoding
 (``--model-draft``). EdgeSpark uses it two ways, and neither is as the drafter
 host:
 
-* **Baseline 1** — vanilla quantized verifier, no speculation. The tokens/sec
+* **Baseline 1**, vanilla quantized verifier, no speculation. The tokens/sec
   floor EdgeSpark has to beat.
-* **Baseline 2** — vanilla quantized verifier + a separate draft model via
+* **Baseline 2**, vanilla quantized verifier + a separate draft model via
   ``--model-draft``. This is *ordinary* speculative decoding with no hidden-state
-  conditioning, no Markov head, no confidence head — exactly the thing EdgeSpark's
+  conditioning, no Markov head, no confidence head, exactly the thing EdgeSpark's
   semi-AR drafter is supposed to improve on.
 
 It also serves as an independent tokens/sec oracle: if EdgeSpark and llama.cpp

@@ -9,7 +9,7 @@ plotted, and regression-tested before (and independently of) a GPU run:
 
 It is deliberately honest about what it is. The calibration numbers it reports are
 produced by the *real* metrics and recalibration code in ``edgespark.calibration``
-operating on simulated (confidence, outcome) pairs — the plotting path is the same
+operating on simulated (confidence, outcome) pairs, the plotting path is the same
 one a hardware run would take. The latency parameters are per-op timings measured
 on the target machine and recorded in ``bench/timings.md``; change them there and
 the modelled throughput moves with them.
@@ -57,7 +57,7 @@ _PRECISION = {
 # Design-time verifier-timing model. Kept at the *design-time* per-op costs so the
 # figures and the projected throughput below stay internally coherent and
 # reproducible. The RX 7900 XTX hardware run measured far smaller intrinsic costs
-# (fp16 decode ~2.9 ms, KV-cached verify ~3.2 ms, per-position marginal ~0) — the
+# (fp16 decode ~2.9 ms, KV-cached verify ~3.2 ms, per-position marginal ~0), the
 # authoritative measured values live in bench/timings.md and runs/hardware/. They
 # are deliberately NOT plugged in here for two reasons: (1) INT8/NF4 could not be
 # built (no bitsandbytes on native-Windows ROCm), so a mixed fp16-measured /
@@ -167,7 +167,7 @@ def simulate_throughput(
     """Model end-to-end tok/s for one configuration.
 
     The verification length is chosen by the *policy* from the confidence profile
-    the drafter would report — calibrated or not. The accepted length is then the
+    the drafter would report, calibrated or not. The accepted length is then the
     expectation under the *true* survival, so miscalibration costs throughput
     (bad ell) without ever costing correctness.
     """

@@ -1,7 +1,7 @@
 """EdgeSpark live demo server (spec section 9.8).
 
 The report's ideal demo: *same local model, same machine, faster*. This serves a
-side-by-side dashboard — vanilla decode vs EdgeSpark — streaming tokens with live
+side-by-side dashboard, vanilla decode vs EdgeSpark, streaming tokens with live
 panels for tokens/sec, VRAM, tokens accepted speculatively this step, and a
 draft-depth / accepted-length strip.
 
@@ -11,7 +11,7 @@ Two engines behind one Server-Sent-Events endpoint:
   7900 XTX.
 * **cpu** (default): drives the numpy reference loop with correlated toy LMs, and
   times each round with the same latency model as ``bench.simulate``. No torch,
-  no GPU — so the demo runs on any machine and still tells the throughput story.
+  no GPU, so the demo runs on any machine and still tells the throughput story.
 
 Stdlib only (``http.server``), so ``python demo/server.py`` just works.
 """

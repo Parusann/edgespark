@@ -4,12 +4,12 @@ EdgeSpark is only allowed to be faster, never different. These tests pin that
 down two ways:
 
 * Greedy decoding is *token-for-token identical* to the verifier decoding on its
-  own — and stays identical under every verification-length policy, because the
+  own, and stays identical under every verification-length policy, because the
   policy only bounds how many drafts are checked.
 * Stochastic decoding is *distribution-identical*: the acceptance rule is
   unbiased, so over many samples the emitted token distribution matches the
-  verifier's own. (Token-identity is the wrong claim under sampling — the two
-  paths consume randomness differently — so we test the property that is
+  verifier's own. (Token-identity is the wrong claim under sampling, the two
+  paths consume randomness differently, so we test the property that is
   actually true.)
 """
 
@@ -56,7 +56,7 @@ def test_greedy_identical_across_verification_lengths():
 
 
 def test_drafter_quality_changes_speed_not_output():
-    # A deliberately awful drafter still yields identical tokens — just slower.
+    # A deliberately awful drafter still yields identical tokens, just slower.
     verifier = ToyCategoricalLM(vocab_size=16, seed=2)
     good = ToyCategoricalLM(vocab_size=16, seed=2, temperature=0.7)
     awful = ToyCategoricalLM(vocab_size=16, seed=99, temperature=3.0)

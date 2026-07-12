@@ -1,13 +1,13 @@
 # EdgeSpark live demo
 
-Side-by-side streaming — vanilla decode vs. EdgeSpark — with live tokens/sec,
+Side-by-side streaming, vanilla decode vs. EdgeSpark, with live tokens/sec,
 speedup, a draft-depth / accepted-length strip, and the standing reminder that
 the two columns emit the *same* tokens (spec §9.8).
 
 ## Run it
 
 ```bash
-# CPU / any machine — toy LMs, timed with the measured latency model:
+# CPU / any machine, toy LMs, timed with the measured latency model:
 python demo/server.py
 # open http://127.0.0.1:8000
 
@@ -30,4 +30,4 @@ before the ROCm stack is stood up; `--hardware` swaps in the real
   positions the policy chose not to verify (grey).
 
 Because the verifier owns every token, the right column is the same sequence the
-left one produces — just fewer verifier passes to get there.
+left one produces, just fewer verifier passes to get there.

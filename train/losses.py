@@ -2,17 +2,17 @@
 
 Three terms, mixed per the DSpark recipe:
 
-* **token cross-entropy** (``ce_loss_alpha`` ~ 0.1) — the drafter's block logits
+* **token cross-entropy** (``ce_loss_alpha`` ~ 0.1), the drafter's block logits
   against the verifier's tokens.
-* **hidden-state L1 regression** (``l1_loss_alpha`` ~ 0.9) — the dominant term:
+* **hidden-state L1 regression** (``l1_loss_alpha`` ~ 0.9), the dominant term:
   match the verifier's hidden state at each block position (EAGLE-style feature
   distillation). Getting the *representation* right is what makes the cheap head
   propose acceptable tokens.
-* **confidence BCE** (scaled by ``confidence_head_alpha``) — the confidence head
+* **confidence BCE** (scaled by ``confidence_head_alpha``), the confidence head
   against the actual accept label (did the drafter's argmax match the target?).
 
 All three are weighted by a positional decay ``exp(-j / loss_decay_gamma)`` so
-early block positions — the ones most likely to be accepted and thus to matter —
+early block positions, the ones most likely to be accepted and thus to matter,
 dominate the gradient.
 """
 

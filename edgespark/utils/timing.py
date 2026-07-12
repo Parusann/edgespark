@@ -2,7 +2,7 @@
 
 The per-token latency model is ``(T_draft + T_verify) / tau`` (spec Appendix B),
 so ``T_draft`` and ``T_verify`` have to be measured honestly. On GPU that means
-synchronising around the region — wall-clock around an async kernel launch is a
+synchronising around the region, wall-clock around an async kernel launch is a
 classic way to report numbers that are far too good. ``GpuTimer`` handles the
 sync; ``WallTimer`` is the CPU fallback used in the numpy reference path.
 """

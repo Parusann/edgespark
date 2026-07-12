@@ -2,7 +2,7 @@
 
 torch-gated: these run on the ROCm box and any dev machine with torch, and are
 skipped on the pure-numpy CI lane. They assert the simulators behave like real
-quantizers — bounded error, exact grids — so the calibration study rests on a
+quantizers, bounded error, exact grids, so the calibration study rests on a
 quantizer that actually quantizes.
 """
 
@@ -44,7 +44,7 @@ def test_nf4_snaps_to_grid():
 
 
 def test_nf4_error_exceeds_int8_error():
-    # 4 bits should hurt more than 8 bits — the premise of the study.
+    # 4 bits should hurt more than 8 bits, the premise of the study.
     torch.manual_seed(0)
     w = torch.randn(128, 256)
     e8 = (fake_quantize_int8(w) - w).abs().mean()

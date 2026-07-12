@@ -1,8 +1,8 @@
-"""INT8 (W8A8) quantization of the drafter — the primary variant.
+"""INT8 (W8A8) quantization of the drafter, the primary variant.
 
 ``quantize_drafter_int8`` swaps the backbone's ``nn.Linear`` layers for
 bitsandbytes-ROCm 8-bit linears (verified on gfx1100 in Phase 0). By default the
-confidence head is left in high precision — it is the thing under study, so we
+confidence head is left in high precision, it is the thing under study, so we
 quantize it last and separately.
 
 ``fake_quantize_int8`` is the simulator: symmetric per-channel INT8 rounding of a
@@ -19,7 +19,7 @@ def fake_quantize_int8(weight, per_channel: bool = True):
 
     Per-channel (per output row) scales, which is what real INT8 kernels use and
     what keeps the error small enough that *proposals* survive while *calibration*
-    does not — the exact asymmetry the study is about.
+    does not, the exact asymmetry the study is about.
     """
     import torch
 

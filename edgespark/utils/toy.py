@@ -1,6 +1,6 @@
 """A tiny order-1 Markov language model, in pure numpy.
 
-Not part of the real stack — the real verifier is Qwen3 via HF Transformers. But
+Not part of the real stack, the real verifier is Qwen3 via HF Transformers. But
 speculative decoding is a probabilistic protocol, and protocols deserve tests
 that don't need an 8 GB model or a GPU. ``ToyCategoricalLM`` gives us a fully
 specified "language model" over a handful of tokens whose exact next-token
@@ -36,13 +36,13 @@ class ToyCategoricalLM:
     @classmethod
     def perturbed(cls, base: ToyCategoricalLM, noise: float = 0.5, seed: int = 0,
                   temperature: float = 1.0) -> ToyCategoricalLM:
-        """A drafter LM correlated with ``base`` — a realistic partial-agreement pair.
+        """A drafter LM correlated with ``base``, a realistic partial-agreement pair.
 
         Same-seed models share an argmax and accept everything; independent models
         never agree. Real drafter/verifier pairs are in between. This adds logit
         noise to ``base`` so ``noise`` dials greedy agreement (and thus accept
         rate) continuously: small noise ~ a strong drafter, large noise ~ a weak
-        one. Exactness holds either way — only speed changes.
+        one. Exactness holds either way, only speed changes.
         """
         obj = cls.__new__(cls)
         obj.vocab_size = base.vocab_size
@@ -74,7 +74,7 @@ class ToyCategoricalLM:
         """Sample a block of ``block_size`` tokens autoregressively from this LM.
 
         Returns ``(tokens[L], draft_dist[L, vocab])`` where row ``j`` is the
-        distribution ``tokens[j]`` was drawn from — exactly what
+        distribution ``tokens[j]`` was drawn from, exactly what
         :func:`edgespark.loop.acceptance.speculative_accept` needs.
         """
         tokens, dists = [], []

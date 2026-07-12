@@ -1,21 +1,21 @@
 """Post-hoc recalibration of the confidence head (spec section 9.4, "the fix").
 
 Two cheap methods, both fit on a small held-out calibration set and both
-*monotone* in the head's raw score — they rescale confidence without changing the
+*monotone* in the head's raw score, they rescale confidence without changing the
 ranking of which positions look more likely to be accepted, so they can never
 turn a good proposal into a bad one:
 
-* :class:`TemperatureScaler` — one parameter ``T``. ``p_cal = sigmoid(z / T)``
+* :class:`TemperatureScaler`, one parameter ``T``. ``p_cal = sigmoid(z / T)``
   where ``z`` is the head's logit. Divides the confidence "sharpness" down
   (``T > 1``) or up (``T < 1``). This is Method A in the spec and the one that
   does most of the work in practice.
 
-* :class:`PlattScaler` — two parameters. ``p_cal = sigmoid(a * z + b)``. A slope
+* :class:`PlattScaler`, two parameters. ``p_cal = sigmoid(a * z + b)``. A slope
   and a bias; strictly more expressive than temperature scaling, useful when
   quantization introduces a *shift* as well as a sharpness change.
 
 Both are fit by minimising negative log-likelihood with a plain 1-D / 2-D Newton
-step in ``numpy`` — no scipy, no torch, so recalibration runs anywhere the metrics
+step in ``numpy``, no scipy, no torch, so recalibration runs anywhere the metrics
 do. Inputs are the head's predicted probabilities; we recover the logit
 internally, so callers never have to plumb logits around.
 """
@@ -102,7 +102,7 @@ class PlattScaler:
             # Floor the IRLS weights before forming the Hessian. On a badly
             # over-confident head (the NF4 case) an undamped Newton step overshoots,
             # the sigmoid saturates, W = p(1-p) collapses to ~0, and the Hessian
-            # degenerates to just the ridge term — sending the next step to ~1e6.
+            # degenerates to just the ridge term, sending the next step to ~1e6.
             # The floor keeps curvature information; the line search below refuses
             # any step that does not actually decrease the loss.
             W = np.clip(p * (1 - p), 1e-6, None)

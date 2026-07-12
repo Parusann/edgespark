@@ -4,7 +4,7 @@ This is the real thing the numpy ``reference.py`` loop specifies: verifier hidde
 states in, drafted block out, exact verification, accepted tokens emitted, with
 timing and per-step metrics logged. It owns the verifier's KV cache and the
 hidden-state hooks, which is exactly why EdgeSpark runs in a controlled loop
-rather than a black-box serving framework — no off-the-shelf runtime hands you
+rather than a black-box serving framework, no off-the-shelf runtime hands you
 selected-layer hidden states, a custom Markov+confidence head, and per-step
 ``ell`` selection at once.
 
@@ -52,7 +52,7 @@ class EdgeSparkGenerator:
 
     def _last_position_hidden(self, hidden_by_layer):
         # The drafter conditions on the hidden states at the final context
-        # position — the point from which the next block is proposed.
+        # position, the point from which the next block is proposed.
         return {lid: h[:, -1:, :] for lid, h in hidden_by_layer.items()}
 
     def generate(

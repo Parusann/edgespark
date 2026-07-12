@@ -1,4 +1,4 @@
-# INT8 W8A8 drafter — the primary quantization variant (spec section 9.3).
+# INT8 W8A8 drafter, the primary quantization variant (spec section 9.3).
 name: int8
 scheme: w8a8
 target: drafter

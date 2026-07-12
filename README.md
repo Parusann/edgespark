@@ -2,7 +2,7 @@
 
 # ◆ EdgeSpark
 
-**Quantized speculative decoding for a single consumer AMD GPU — and a study of what quantization does to a confidence head.**
+**Quantized speculative decoding for a single consumer AMD GPU, and a study of what quantization does to a confidence head.**
 
 [![CI](https://github.com/Parusann/edgespark/actions/workflows/ci.yml/badge.svg)](https://github.com/Parusann/edgespark/actions/workflows/ci.yml)
 ![Python](https://img.shields.io/badge/python-3.10%2B-blue)
@@ -16,8 +16,8 @@
 
 ---
 
-EdgeSpark takes DeepSeek's **DSpark** idea — a semi-autoregressive draft model
-with a Markov head and a confidence head sitting on top of an unchanged verifier —
+EdgeSpark takes DeepSeek's **DSpark** idea, a semi-autoregressive draft model
+with a Markov head and a confidence head sitting on top of an unchanged verifier,
 and makes it run well on **one consumer GPU** (Radeon RX 7900 XTX, 24 GB, RDNA3)
 for **$0**. The speculative-decoding guarantee is preserved exactly: the drafter
 only *proposes*, the verifier *decides*, so the output is identical to running the
@@ -25,11 +25,11 @@ verifier alone.
 
 The novel part is a question DSpark never had to face. DSpark targets datacenter
 GPUs and mixed FP4/FP8. Consumer AMD hardware has **no FP8 path and one GPU**, so
-the drafter has to be quantized to INT8/4-bit to fit — and:
+the drafter has to be quantized to INT8/4-bit to fit, and:
 
 > **When you quantize a DSpark-style drafter hard enough to fit cheap hardware,
 > the confidence head's _calibration_ degrades faster than its token _proposals_.
-> EdgeSpark measures that gap and shows a one-parameter fix that closes it — which
+> EdgeSpark measures that gap and shows a one-parameter fix that closes it, which
 > in turn recovers the scheduler that depends on it.**
 
 ## Headline results
@@ -44,15 +44,15 @@ the drafter has to be quantized to INT8/4-bit to fit — and:
 |---|---|---|---|
 | **Output identical** (greedy) | token-for-token | exact | ✅ **validated on real Qwen3-4B** (`exact_ok=true`) |
 | **Memory** (verifier + drafter + KV) | fit 24 GB | 9.4 GB | ✅ **measured 9.5 GB peak, ~15 GB free** (fp16) |
-| **Throughput** (INT8 drafter, code / chat) | ≥ 25% over baseline | +43% / +36% | 🔶 **modelled** — quantized run pending¹ |
-| **Calibration** (NF4 head) | recover ECE → fp16 | 0.166 → 0.014 | 🔶 **modelled** — pending¹ |
-| **Policy** (confidence-gated ℓ) | beat always-verify-all | wins | ⚠️ **ties on this GPU** — verify marginal ≈ 0² |
+| **Throughput** (INT8 drafter, code / chat) | ≥ 25% over baseline | +43% / +36% | 🔶 **modelled**, quantized run pending¹ |
+| **Calibration** (NF4 head) | recover ECE → fp16 | 0.166 → 0.014 | 🔶 **modelled**, pending¹ |
+| **Policy** (confidence-gated ℓ) | beat always-verify-all | wins | ⚠️ **ties on this GPU**, verify marginal ≈ 0² |
 
 > **Hardware validation (RX 7900 XTX · native-Windows ROCm · 2026-07-05).** The
 > correctness invariant is proven on the real model: `loop/generate.py` runs
 > Qwen3-4B end-to-end and emits output token-for-token identical to the verifier
 > alone, for any drafter quality. Also measured: fp16 per-op latencies, VRAM
-> (9.5 GB peak), and llama.cpp baselines (Q4_K_M 214 tok/s, Q8_0 151 tok/s —
+> (9.5 GB peak), and llama.cpp baselines (Q4_K_M 214 tok/s, Q8_0 151 tok/s,
 > ordinary speculative decoding is 0.96× here, the floor EdgeSpark must beat).
 > ¹INT8/NF4 and the calibration study are **modelled**: bitsandbytes is unavailable
 > on this native-Windows ROCm stack (a Linux-ROCm box or a GGUF/AWQ path unblocks
@@ -65,7 +65,7 @@ the drafter has to be quantized to INT8/4-bit to fit — and:
 > Throughput/VRAM numbers are the modelled reference run (`bench/simulate.py`,
 > driven by measured per-op timings); reproduce them on the 7900 XTX with
 > `python scripts/run_benchmark.py --hardware`. The calibration numbers are the
-> **real** `edgespark.calibration` code — the same path a hardware run uses.
+> **real** `edgespark.calibration` code, the same path a hardware run uses.
 > Full provenance in [docs/RESULTS.md](docs/RESULTS.md).
 
 ## The headline study, in one picture
@@ -77,9 +77,9 @@ the drafter has to be quantized to INT8/4-bit to fit — and:
 </div>
 
 Quantization barely touches which tokens the drafter proposes, but it makes its
-confidence head badly **over-confident** — and the more aggressive the
+confidence head badly **over-confident**, and the more aggressive the
 quantization, the worse it gets (the fitted temperature climbs 1.03 → 1.81 →
-2.70). Temperature scaling on a few thousand held-out positions — no retraining —
+2.70). Temperature scaling on a few thousand held-out positions, no retraining,
 pulls the points back onto the diagonal. That is the whole thesis, made visual.
 
 ## Quickstart
@@ -88,7 +88,7 @@ pulls the points back onto the diagonal. That is the whole thesis, made visual.
 git clone https://github.com/Parusann/edgespark
 cd edgespark
 
-# 1. The correctness-critical core is pure numpy — it runs anywhere.
+# 1. The correctness-critical core is pure numpy, it runs anywhere.
 pip install numpy pyyaml pytest
 pytest -q                                    # 37 tests: 18-check exactness suite + calibration + policy
 
@@ -118,7 +118,7 @@ python demo/server.py --hardware             # the real side-by-side demo
  accepted prefix + verifier hidden states
         │
    ┌────▼─────────────────────────────┐    drafter is INT8/NF4 and can be as wrong
-   │ drafter: backbone → block logits │    as it likes — it only affects SPEED
+   │ drafter: backbone → block logits │    as it likes, it only affects SPEED
    │          markov head → bias      │
    │          confidence head → a_j   │──► calibrated survival a_1..a_block
    └────┬─────────────────────────────┘
@@ -135,7 +135,7 @@ python demo/server.py --hardware             # the real side-by-side demo
 ```
 
 **The correctness invariant.** For a fixed seed, greedy EdgeSpark output is
-token-for-token identical to the verifier decoding on its own — for *any* drafter
+token-for-token identical to the verifier decoding on its own, for *any* drafter
 quality and *any* verification length. Stochastic decoding is distribution-identical
 (the acceptance rule is provably unbiased). This is enforced, not hoped for:
 [`tests/test_exactness.py`](tests/test_exactness.py) checks greedy identity under
@@ -144,7 +144,7 @@ every policy and runs a Monte-Carlo unbiasedness test at TV < 0.02.
 Why the confidence head matters for *speed*, not just accuracy: it drives the
 verification-length policy. An over-confident head lies to the scheduler about how
 far to verify, so on a single stream, miscalibration costs throughput. That is why
-recalibration and the policy are the same result — see
+recalibration and the policy are the same result, see
 [docs/TECHNICAL_REPORT.md](docs/TECHNICAL_REPORT.md).
 
 ## Results
@@ -152,13 +152,13 @@ recalibration and the policy are the same result — see
 | Figure | What it shows |
 |---|---|
 | [Throughput](docs/assets/throughput.svg) | EdgeSpark vs. baseline, code + chat, per precision |
-| [Reliability diagrams](docs/assets/reliability_diagrams.svg) | calibration damage and recovery — the money plot |
+| [Reliability diagrams](docs/assets/reliability_diagrams.svg) | calibration damage and recovery, the money plot |
 | [Policy ablation](docs/assets/policy_ablation.svg) | confidence-gated ℓ vs. always-verify-all |
 | [VRAM breakdown](docs/assets/vram_breakdown.svg) | fitting 24 GB across precisions |
 
 Full tables, provenance, and the reproduce-it commands: **[docs/RESULTS.md](docs/RESULTS.md)**.
 
-**Technical preprint:** a 10-page writeup — [**paper/edgespark.pdf**](paper/edgespark.pdf) ([LaTeX source](paper/edgespark.tex)) — with the exactness theorem and proof sketch, the calibration study, and results split explicitly into measured vs. modelled.
+**Technical preprint:** a 10-page writeup, [**paper/edgespark.pdf**](paper/edgespark.pdf) ([LaTeX source](paper/edgespark.tex)), with the exactness theorem and proof sketch, the calibration study, and results split explicitly into measured vs. modelled.
 
 ## Repository layout
 
@@ -189,7 +189,7 @@ edgespark/
 | CPU / RAM | Ryzen 9 7900 (12c) · 32 GB (stream caches from SSD; never load whole) |
 | Stack | ROCm 7.2.4 · PyTorch ROCm · HF Transformers · bitsandbytes-ROCm |
 | Verifier | Qwen3-4B (fp16 or INT8/NF4); Qwen3-8B as a quantized stretch |
-| Quantization | INT8 W8A8 · NF4 — **no FP8** (unsupported on RDNA3) |
+| Quantization | INT8 W8A8 · NF4, **no FP8** (unsupported on RDNA3) |
 | Attention | PyTorch SDPA by default; flash-attention (navi fork) optional |
 
 ## Scope

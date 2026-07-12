@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>EdgeSpark — live demo</title>
+  <title>EdgeSpark, live demo</title>
   <link rel="stylesheet" href="/style.css" />
 </head>
 <body>
@@ -12,7 +12,7 @@
       <span class="spark">◆</span>
       <div>
         <h1>EdgeSpark</h1>
-        <p>Same model, same machine, faster — and provably the same output.</p>
+        <p>Same model, same machine, faster, and provably the same output.</p>
       </div>
     </div>
     <div class="controls">
@@ -29,15 +29,15 @@
   <section class="scoreboard">
     <div class="score">
       <span class="score-label">vanilla</span>
-      <span id="s-vanilla" class="score-value">— <small>tok/s</small></span>
+      <span id="s-vanilla" class="score-value">, <small>tok/s</small></span>
     </div>
     <div class="score highlight">
       <span class="score-label">EdgeSpark</span>
-      <span id="s-edge" class="score-value">— <small>tok/s</small></span>
+      <span id="s-edge" class="score-value">, <small>tok/s</small></span>
     </div>
     <div class="score">
       <span class="score-label">speedup</span>
-      <span id="s-speedup" class="score-value">—</span>
+      <span id="s-speedup" class="score-value">, </span>
     </div>
     <div class="score">
       <span class="score-label">output match</span>
@@ -67,7 +67,7 @@
   </section>
 
   <footer>
-    <p>The verifier decides every token. The drafter and the confidence-gated policy only change speed —
+    <p>The verifier decides every token. The drafter and the confidence-gated policy only change speed,
        for a fixed seed the two columns emit the same sequence. See <code>tests/test_exactness.py</code>.</p>
   </footer>
 

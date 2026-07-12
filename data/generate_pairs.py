@@ -2,7 +2,7 @@
 
 DeepSpec-style: the verifier (Qwen3-4B, non-thinking mode) writes the responses,
 so the drafter learns to imitate the exact model it will later propose for. Small
-by design — tens of thousands of short sequences, not a 38 TB reproduction (spec
+by design, tens of thousands of short sequences, not a 38 TB reproduction (spec
 sections 4, 10). Streamed to JSONL so the corpus never has to sit in 32 GB of RAM.
 
 torch/transformers imported lazily; run on the target machine.

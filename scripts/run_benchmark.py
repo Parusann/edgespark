@@ -4,8 +4,8 @@
     python scripts/run_benchmark.py --smoke         # CPU plumbing check, no torch
     python scripts/run_benchmark.py --simulate      # regenerate modelled reference numbers
 
-``--simulate`` writes ``runs/reference/summary.json`` — the modelled reference the
-README tables and figures quote — so anyone can reproduce the *shape* of the
+``--simulate`` writes ``runs/reference/summary.json``, the modelled reference the
+README tables and figures quote, so anyone can reproduce the *shape* of the
 result without the hardware, then replace it with a real ``--hardware`` run.
 """
 

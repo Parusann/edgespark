@@ -8,7 +8,7 @@ DSpark's 256) trades a little expressiveness for footprint and speed.
 
 The bias is factored as ``E[prev] @ P`` with ``E: [vocab, rank]`` and
 ``P: [rank, vocab]``, so it costs one embedding lookup and one ``rank x vocab``
-matmul per position — negligible next to the backbone.
+matmul per position, negligible next to the backbone.
 """
 
 from __future__ import annotations

@@ -4,9 +4,9 @@ Replays fixed prompt sets single-stream, logs every metric from section 12 as
 JSON lines, records exactness pass/fail per run, and emits a summary. Three ways
 to run it:
 
-* ``run_hardware`` — the real thing on the RX 7900 XTX: builds the verifier and
+* ``run_hardware``, the real thing on the RX 7900 XTX: builds the verifier and
   quantized drafter, times EdgeSpark against the vanilla baseline.
-* ``run_smoke`` — the numpy reference loop with toy LMs. No torch, no GPU; it
+* ``run_smoke``, the numpy reference loop with toy LMs. No torch, no GPU; it
   exercises the whole plumbing (draft → gate → verify → log → summarise) so the
   harness itself is testable in CI.
 * modelled numbers come from ``bench.simulate`` via ``scripts/run_benchmark.py
@@ -147,7 +147,7 @@ def _build_drafter(drafter_config, precision, verifier_hidden):
 
 
 def _measure_baseline(verifier, prompts, bench_config) -> float:
-    """Vanilla autoregressive decode tok/s — baseline 1 from section 12."""
+    """Vanilla autoregressive decode tok/s, baseline 1 from section 12."""
     import torch
 
     toks, t0 = 0, _now()

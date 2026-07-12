@@ -1,7 +1,7 @@
 # Paper
 
 **EdgeSpark: Quantized Semi-Autoregressive Speculative Decoding and
-Confidence-Head Calibration on a Single Consumer AMD GPU** — the technical
+Confidence-Head Calibration on a Single Consumer AMD GPU**, the technical
 preprint. [`edgespark.pdf`](edgespark.pdf) is the compiled version.
 
 ## Build
@@ -20,7 +20,7 @@ latexmk -pdf edgespark.tex        # runs pdflatex + bibtex as needed
 ```
 
 Figures are native pgfplots/TikZ drawn from the project's own data (no external
-image files), so there is nothing to regenerate — the reliability curves in
+image files), so there is nothing to regenerate, the reliability curves in
 Figure 2 are the same numbers `scripts/make_figures.py` produces.
 
 ## A note on honesty

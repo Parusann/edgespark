@@ -18,9 +18,9 @@ about ``ell`` and the worst outcome is lost speed, never a wrong token.
 
 Two policies:
 
-* :class:`ThresholdPolicy` — verify the longest prefix whose cumulative predicted
+* :class:`ThresholdPolicy`, verify the longest prefix whose cumulative predicted
   survival stays above ``theta``. One interpretable knob, tuned on held-out data.
-* :func:`optimal_length` — the cost-aware optimum given a verifier timing model;
+* :func:`optimal_length`, the cost-aware optimum given a verifier timing model;
   used offline to *choose* a good ``theta`` and as the ceiling the threshold rule
   is measured against.
 """
@@ -63,7 +63,7 @@ def optimal_length(
     Maximises ``E[accepted(ell)] / (t_draft + t_verify(ell))``. ``t_verify`` maps a
     verification length to a predicted verifier time (measured offline; often
     close to affine in ``ell`` on one GPU). Returns the best ``ell`` in
-    ``[1, block_size]`` — verifying nothing is never throughput-optimal when any
+    ``[1, block_size]``, verifying nothing is never throughput-optimal when any
     draft has positive survival.
     """
     a = np.asarray(confidence_profile, dtype=np.float64).ravel()
@@ -92,7 +92,7 @@ class ThresholdPolicy(VerifyLengthPolicy):
 
     ``theta`` is the one tuned knob. ``ema_gain`` gently lengthens verification
     when the recent stream has been accepting well and shortens it when accepts
-    have dried up — a cheap, exactness-neutral adaptation to locally easy or hard
+    have dried up, a cheap, exactness-neutral adaptation to locally easy or hard
     text. Set ``ema_gain=0`` for the pure static rule used in the ablation.
     """
 

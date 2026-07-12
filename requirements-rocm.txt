@@ -31,4 +31,4 @@ matplotlib>=3.7
 
 # flash-attention is optional. On gfx1100 it requires AMD's fork
 # (howiejay/navi_support); the code falls back to PyTorch SDPA if absent.
-# Do not add a PyPI flash-attn pin here — it targets CUDA.
+# Do not add a PyPI flash-attn pin here, it targets CUDA.

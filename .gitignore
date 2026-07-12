@@ -16,7 +16,7 @@ env/
 .coverage
 htmlcov/
 
-# EdgeSpark artifacts — regenerable, and some are large
+# EdgeSpark artifacts, regenerable, and some are large
 checkpoints/
 data/cache/
 data/datasets/pairs.jsonl

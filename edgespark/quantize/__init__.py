@@ -8,7 +8,7 @@ Two layers of functionality:
   INT8 / NF4 grid in plain torch. It reproduces the *numerical* effect of
   quantization without needing gfx1100 kernels, which is what makes the
   confidence-calibration study (section 9.4) runnable and unit-testable off the
-  target GPU. Fake-quant is a standard tool, not a shortcut — it is how the
+  target GPU. Fake-quant is a standard tool, not a shortcut, it is how the
   degradation is isolated from kernel-level noise.
 
 FP8 is intentionally absent: unsupported on RDNA3 (spec section 4).

@@ -2,7 +2,7 @@
 
 The same verifier EdgeSpark uses, decoded one token per forward pass with no
 drafter. Kept in-process (rather than only via llama.cpp) so the baseline runs on
-the *identical* model object and precision EdgeSpark runs on — the fairest possible
+the *identical* model object and precision EdgeSpark runs on, the fairest possible
 comparison, same machine / same verifier / same quality budget.
 """
 

@@ -48,7 +48,7 @@ def _transformers():
 
 def _bitsandbytes():
     m = importlib.import_module("bitsandbytes")
-    # Presence is necessary but not sufficient on gfx1100 — the Phase 0 gate also
+    # Presence is necessary but not sufficient on gfx1100, the Phase 0 gate also
     # runs a tiny Linear8bitLt forward; see docs/PHASE0.md.
     return True, f"bitsandbytes {getattr(m, '__version__', '?')}"
 
@@ -87,7 +87,7 @@ def main():
     if hard_ok:
         print("Phase 0 hard gate: PASS")
         sys.exit(0)
-    print("Phase 0 hard gate: FAIL — resolve the MISS items before building on them.")
+    print("Phase 0 hard gate: FAIL, resolve the MISS items before building on them.")
     sys.exit(1)
 
 

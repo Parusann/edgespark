@@ -1,11 +1,11 @@
 # Results
 
 > **Provenance.** Two layers of results. **Measured on the RX 7900 XTX**
-> (native-Windows ROCm, 2026-07-05 — see [`runs/hardware/`](../runs/hardware/)): the
+> (native-Windows ROCm, 2026-07-05, see [`runs/hardware/`](../runs/hardware/)): the
 > exactness invariant on the real Qwen3-4B, fp16 per-op latencies, VRAM, and
 > llama.cpp baselines. **Modelled** (`bench/simulate.py` →
 > [`summary.json`](../runs/reference/summary.json)): the INT8/NF4 throughput, the
-> gated-policy ablation, and the calibration study — because bitsandbytes is
+> gated-policy ablation, and the calibration study, because bitsandbytes is
 > unavailable on this Windows-ROCm stack, so no quantized drafter could be built or
 > trained yet. The calibration *figures* are produced by the **real**
 > `edgespark.calibration` code on simulated confidence data (the same path a
@@ -24,8 +24,8 @@
 | Gated policy beats always-verify-all | ⚠️ **modelled only** | on-hardware the per-ℓ verify cost is ≈ 0, so gating **ties** always-verify-all |
 | End-to-end speculative speedup | ⏳ **pending** | current `block_distribution` re-encodes the prefix (prefill-bound ~52.6 ms); needs the KV-reuse fix |
 
-Sections 1–3 and 5 below are the **design-time model** (`bench/simulate.py`), kept
-as a coherent projection and labelled as such — the target the hardware run is
+Sections 1-3 and 5 below are the **design-time model** (`bench/simulate.py`), kept
+as a coherent projection and labelled as such, the target the hardware run is
 working toward, not a claim of measured throughput. Section 4 (exactness) and the
 fp16 VRAM figures are measured.
 
@@ -45,9 +45,9 @@ hardware vs. still modelled):
 
 ## 1. Throughput (modelled)
 
-![Throughput — design-time model](assets/throughput.svg)
+![Throughput, design-time model](assets/throughput.svg)
 
-**Design-time model** (§0) — single stream, Qwen3-4B INT8 verifier, greedy
+**Design-time model** (§0), single stream, Qwen3-4B INT8 verifier, greedy
 decoding, gated verification; baseline is the vanilla quantized verifier with no
 speculation (64.5 tok/s). Not yet measured on hardware: INT8 needs bitsandbytes,
 and end-to-end throughput needs the KV-reuse fix (today's verify is prefill-bound).
@@ -62,7 +62,7 @@ The fp16 drafter isolates the quantization effect: INT8 gives up only ~3% of the
 fp16 speedup while cutting drafter VRAM roughly in half. Every variant clears the
 25% primary criterion, with output identical to the baseline (§4).
 
-## 2. Calibration — the headline study
+## 2. Calibration, the headline study
 
 ![Reliability diagrams](assets/reliability_diagrams.svg)
 
@@ -78,7 +78,7 @@ Quantization damages the confidence head's *calibration* far more than its token
 Two things to read off the table. First, the fitted temperature climbs with
 quantization aggressiveness (1.03 → 1.81 → 2.70): the 4-bit head is badly
 over-confident and needs to be cooled hard. Second, the ECE recovery is almost
-total — a large, cleanly *recoverable* miscalibration gap, which is exactly the
+total, a large, cleanly *recoverable* miscalibration gap, which is exactly the
 positive result the project set out to find (spec §17).
 
 ## 3. Verification-length policy
@@ -88,7 +88,7 @@ positive result the project set out to find (spec §17).
 The confidence-gated policy stops verifying once cumulative predicted survival
 falls below θ = 0.45, rather than always verifying the full block. It accepts a
 *lower* τ per round but spends much less verifier time, so tokens/sec rises at
-every precision — **in this design-time model**.
+every precision, **in this design-time model**.
 
 > ⚠️ **Hardware caveat (§0).** The gating win depends on the verifier's per-position
 > cost growing with ℓ. On the RX 7900 XTX that marginal measured ≈ 0 (a 4B forward
@@ -111,7 +111,7 @@ threshold rule keeps verifying a low-survival tail that rarely gets accepted:
 | uncalibrated (over-confident) | 5 (over-verifies) | +31% |
 | recalibrated | 3 | **+37%** |
 
-Recalibration recovers ~6 points of throughput purely by making the gate honest —
+Recalibration recovers ~6 points of throughput purely by making the gate honest,
 without ever touching the accept/reject decision, so output is unchanged.
 
 ## 4. Exactness
@@ -119,7 +119,7 @@ without ever touching the accept/reject decision, so output is unchanged.
 Greedy EdgeSpark output is token-for-token identical to the verifier decoding on
 its own, for any drafter quality and any verification length. Stochastic decoding
 is distribution-identical (the acceptance rule is unbiased). Both are enforced in
-[`tests/test_exactness.py`](../tests/test_exactness.py) — 18 checks including a
+[`tests/test_exactness.py`](../tests/test_exactness.py), 18 checks including a
 Monte-Carlo unbiasedness test at TV < 0.02 (37 tests across the full numpy suite).
 
 ## 5. VRAM
@@ -135,5 +135,5 @@ Monte-Carlo unbiasedness test at TV < 0.02 (37 tests across the full numpy suite
 
 The measured fp16+fp16 peak (9.5 GB, verifier 7.7 + drafter 1.8) is at short
 context; the modelled rows add ~4 GB of KV cache + activations at ~8k context.
-Either way the pair sits well inside 24 GB — comfortable room for an 8B verifier
+Either way the pair sits well inside 24 GB, comfortable room for an 8B verifier
 (quantized) or a much longer context (spec §11).

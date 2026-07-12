@@ -1,4 +1,4 @@
-"""NF4 (4-bit) quantization of the drafter — the aggressive variant.
+"""NF4 (4-bit) quantization of the drafter, the aggressive variant.
 
 NF4 is the interesting stress case for the calibration study (spec section 9.3):
 4 bits is expected to damage the confidence head harder than INT8, so it is where
@@ -26,7 +26,7 @@ def fake_quantize_nf4(weight, block_size: int = 64):
     """Block-wise NF4 fake-quant of a weight tensor. Returns the dequantized weight.
 
     Each contiguous block of ``block_size`` weights is scaled by its own absmax,
-    snapped to the nearest NF4 level, and scaled back — mirroring how the real
+    snapped to the nearest NF4 level, and scaled back, mirroring how the real
     NF4 kernel stores a per-block scale plus 4-bit codes.
     """
     import torch

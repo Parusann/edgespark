@@ -2,7 +2,7 @@
 
 matplotlib is the right tool for interactive analysis on the GPU box
 (``bench/plots.py``), but the figures committed to the repo and embedded in the
-README should render anywhere — including GitHub's markdown viewer — with no build
+README should render anywhere, including GitHub's markdown viewer, with no build
 step and no binary blobs in git history. So the committed figures are hand-built
 SVG. This module is the minimal primitive layer; ``scripts/make_figures.py`` uses
 it to draw the four key charts from ``bench.simulate``.
@@ -16,7 +16,7 @@ from __future__ import annotations
 from dataclasses import dataclass, field
 from html import escape
 
-# Palette — colourblind-friendly, legible on light and dark backgrounds.
+# Palette, colourblind-friendly, legible on light and dark backgrounds.
 INK = "#1f2430"
 MUTED = "#6b7280"
 GRID = "#e5e7eb"

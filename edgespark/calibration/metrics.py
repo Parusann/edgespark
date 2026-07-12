@@ -9,8 +9,8 @@ recoverable (``recalibrate.py``).
 
 Everything here is pure ``numpy`` and takes two aligned 1-D arrays:
 
-* ``confidence`` — predicted acceptance probabilities in ``[0, 1]``.
-* ``outcome``    — the observed accept signal in ``{0, 1}`` from the real verifier.
+* ``confidence``, predicted acceptance probabilities in ``[0, 1]``.
+* ``outcome``, the observed accept signal in ``{0, 1}`` from the real verifier.
 
 These pairs are produced by running the drafter+verifier loop and logging, for
 each drafted position, the head's ``a_j`` against whether the exact acceptance
@@ -85,7 +85,7 @@ def reliability_curve(
     """Bin predictions and report accuracy vs. confidence per bin.
 
     Empty bins are dropped so the curve only contains bins that actually carry
-    data — otherwise the diagram sprouts misleading zeros.
+    data, otherwise the diagram sprouts misleading zeros.
     """
     confidence, outcome = _validate(confidence, outcome)
     edges = _bin_edges(n_bins, confidence, strategy)

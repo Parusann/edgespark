@@ -53,13 +53,13 @@ The drafter and the policy change how *fast* you get there.
 
 ## The CPU / GPU split
 
-Everything that can be reasoned about as pure math — the acceptance rule,
-calibration metrics, recalibration, the policy — is implemented in numpy and unit
+Everything that can be reasoned about as pure math, the acceptance rule,
+calibration metrics, recalibration, the policy, is implemented in numpy and unit
 tested without a GPU. The torch modules are the neural machinery that produces the
 distributions those algorithms consume. This is deliberate:
 
 - The correctness-critical code (acceptance, calibration) is testable, auditable,
-  and CI-runnable on any machine — see the 18-check exactness suite.
+  and CI-runnable on any machine, see the 18-check exactness suite.
 - The numpy `reference.py` loop is the executable specification the torch
   `generate.py` loop must match, so "does the GPU loop still do the right thing?"
   has a concrete answer.

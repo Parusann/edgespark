@@ -1,6 +1,6 @@
 """The verifier: an unmodified Qwen3 model that owns every output token.
 
-The verifier is used *as-is* — we never retrain it (spec section 4). Its two jobs:
+The verifier is used *as-is*, we never retrain it (spec section 4). Its two jobs:
 
 1. Expose selected intermediate-layer hidden states so the drafter can condition
    on them (``forward_with_hidden``).
@@ -117,7 +117,7 @@ class Verifier:
 
         Returns an ``[ell + 1, vocab]`` numpy array of probabilities: the exact
         input ``verify_block`` consumes. The verifier scores the whole drafted
-        block in a single forward pass — that single pass is the entire point of
+        block in a single forward pass, that single pass is the entire point of
         speculative decoding.
         """
         import torch

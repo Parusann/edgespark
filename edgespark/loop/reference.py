@@ -3,8 +3,8 @@
 This is the executable specification of what ``edgespark.loop.generate`` (the
 torch/ROCm loop) does, minus the neural machinery. It drives any pair of objects
 that expose the toy-LM interface (``dist`` / ``block_target_dist`` /
-``draft_block``), so the exactness suite can run the *entire* protocol — draft,
-choose ``ell``, verify, accept, correct — on the CPU and check it against the
+``draft_block``), so the exactness suite can run the *entire* protocol, draft,
+choose ``ell``, verify, accept, correct, on the CPU and check it against the
 verifier decoding alone.
 
 The key property it exists to demonstrate: for greedy decoding the output is
@@ -76,7 +76,7 @@ def speculative_decode(
     ``policy`` is an optional :class:`~edgespark.policy.verify_length.VerifyLengthPolicy`.
     When ``None`` the loop verifies the whole block (the always-verify-all
     baseline). The confidence profile handed to the policy is the drafter's own
-    probability for each token it proposed — a stand-in for the confidence head's
+    probability for each token it proposed, a stand-in for the confidence head's
     ``a_j`` that keeps the reference loop self-contained.
     """
     if mode == "stochastic" and rng is None:

@@ -5,8 +5,8 @@ section 17): **never load the whole cache into 32 GB of RAM**. So the cache is
 written as fixed-size shards to SSD and read back with a streaming loader that
 holds one shard at a time.
 
-Only the layers in ``target_layer_ids`` are stored — the drafter's fusion
-sources — which is what keeps the footprint in the 50-200 GB range instead of the
+Only the layers in ``target_layer_ids`` are stored, the drafter's fusion
+sources, which is what keeps the footprint in the 50-200 GB range instead of the
 multi-TB full-hidden-state cache. If GPU headroom allows, skip this entirely and
 compute hidden states on the fly during training (``train/distill.py --on-the-fly``).
 

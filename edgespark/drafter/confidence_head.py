@@ -1,9 +1,9 @@
 """Confidence head: predicted per-position acceptance probability ``a_j``.
 
 This is the component the whole calibration study is about (spec section 9.4).
-It reads each block position's backbone hidden state — optionally concatenated
+It reads each block position's backbone hidden state, optionally concatenated
 with the Markov head's contribution, since the token that actually gets proposed
-depends on the Markov bias — and emits a single logit per position. A sigmoid
+depends on the Markov bias, and emits a single logit per position. A sigmoid
 turns that into ``a_j``, the model's estimate of "will the verifier keep this
 token?".
 

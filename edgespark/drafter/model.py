@@ -5,7 +5,7 @@ policy expect:
 
     draft(hidden_states, accepted_prefix) -> DraftBlock(tokens, confidence, dist)
 
-``confidence`` is the *calibrated* ``a_j`` — if a recalibrator has been attached
+``confidence`` is the *calibrated* ``a_j``, if a recalibrator has been attached
 (``attach_recalibrator``), the raw confidence-head sigmoid is passed through it,
 so everything downstream (the verification-length policy in particular) consumes
 calibrated survival probabilities. Without a recalibrator it returns the raw

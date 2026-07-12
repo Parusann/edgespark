@@ -1,4 +1,4 @@
-// EdgeSpark demo client. Opens two SSE streams — vanilla and EdgeSpark — races
+// EdgeSpark demo client. Opens two SSE streams, vanilla and EdgeSpark, races
 // them side by side, and draws the per-round draft-depth / accepted-length strip.
 
 const $ = (id) => document.getElementById(id);
@@ -12,9 +12,9 @@ function reset() {
   $("out-vanilla").innerHTML = "";
   $("out-edge").innerHTML = "";
   $("depth").innerHTML = "";
-  $("s-vanilla").innerHTML = "— <small>tok/s</small>";
-  $("s-edge").innerHTML = "— <small>tok/s</small>";
-  $("s-speedup").textContent = "—";
+  $("s-vanilla").innerHTML = ", <small>tok/s</small>";
+  $("s-edge").innerHTML = ", <small>tok/s</small>";
+  $("s-speedup").textContent = ", ";
 }
 
 function appendTokens(el, tokens, kind) {

@@ -106,7 +106,7 @@ def test_recalibration_is_monotone():
 
 def test_platt_survives_severe_overconfidence():
     # Regression: an undamped Newton fit diverges (slope ~1e6, NLL far above the
-    # minimum) on a badly over-confident head — precisely the aggressive-quantization
+    # minimum) on a badly over-confident head, precisely the aggressive-quantization
     # (NF4) regime this method exists to repair. The damped fit must converge to the
     # true minimum, recover ECE toward fp16, and stay monotone.
     rng = np.random.default_rng(7)

@@ -1,6 +1,6 @@
 """VRAM accounting for the 24 GB budget (spec sections 6, 11).
 
-Everything — verifier, drafter, KV cache — has to live inside 24 GB. We report
+Everything, verifier, drafter, KV cache, has to live inside 24 GB. We report
 two numbers: what torch has allocated for tensors, and what the driver actually
 reserved (via ``rocm-smi`` when present), because the gap between them is where
 "it fit in my head" turns into an out-of-memory at token 4000.

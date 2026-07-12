@@ -1,7 +1,7 @@
 """Exact speculative-decoding acceptance.
 
-This module is the load-bearing wall of the whole project. Everything else — the
-drafter, the quantization, the confidence head, the verification-length policy —
+This module is the load-bearing wall of the whole project. Everything else, the
+drafter, the quantization, the confidence head, the verification-length policy,
 is allowed to be approximate, heuristic, or quantized to death. This file is not.
 It implements the acceptance rule that makes EdgeSpark *lossless with respect to
 the deployed verifier* (spec section 5).
@@ -15,8 +15,8 @@ Two decoding modes, two guarantees:
 * **Stochastic** (temperature > 0). Standard speculative sampling
   (Leviathan et al. 2023; Chen et al. 2023). The emitted sequence is drawn from a
   distribution *identical* to sampling directly from the verifier. It is **not**
-  token-for-token identical to a naive sampler under a shared seed — the two
-  consume randomness differently — so the correct test is a statistical one
+  token-for-token identical to a naive sampler under a shared seed, the two
+  consume randomness differently, so the correct test is a statistical one
   (unbiasedness over many samples), which ``tests/test_exactness.py`` performs.
 
 The functions here operate on plain ``numpy`` arrays of probabilities so the rule
@@ -201,7 +201,7 @@ def verify_block(
     """Verify the first ``ell`` tokens of a drafted block.
 
     This is the single entry point the inference loop calls. ``ell`` only *bounds
-    how many* drafted tokens are checked — it never changes the accept/reject
+    how many* drafted tokens are checked, it never changes the accept/reject
     decision for the tokens that are checked, which is what keeps the
     verification-length policy (spec section 9.5) exactness-preserving.
     """

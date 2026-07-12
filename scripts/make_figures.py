@@ -7,7 +7,7 @@ can never drift apart. The reliability diagrams in particular are produced by th
 real calibration code (``edgespark.calibration``) run on simulated confidence
 data, so the figure exercises the same path a hardware run would.
 
-Pure numpy + the tiny SVG helper in ``bench.svgplot`` — no matplotlib, so this
+Pure numpy + the tiny SVG helper in ``bench.svgplot``, no matplotlib, so this
 runs on any machine and leaves text-diffable SVG in git rather than binary PNGs.
 """
 
@@ -136,7 +136,7 @@ def throughput_figure(results, out: Path):
     c.text(x0 + 24, y0 + 16, "code", size=11, fill=INK)
     c.rect(x0 + 74, y0 + 6, 12, 12, GOOD, rx=2)
     c.text(x0 + 92, y0 + 16, "chat", size=11, fill=INK)
-    c.text(40, 366, "Modelled projection (bench/simulate.py). On hardware: correctness + baselines measured; quantized run pending — see docs/RESULTS.md §0.", size=11, fill=MUTED)
+    c.text(40, 366, "Modelled projection (bench/simulate.py). On hardware: correctness + baselines measured; quantized run pending, see docs/RESULTS.md §0.", size=11, fill=MUTED)
     save(c, out, "Throughput")
 
 
@@ -175,7 +175,7 @@ def policy_figure(results, out: Path):
     c.text(x0 + 24, y0 + 16, "always-verify-all (ℓ=5)", size=11, fill=INK)
     c.rect(x0 + 200, y0 + 6, 12, 12, ACCENT, rx=2)
     c.text(x0 + 218, y0 + 16, "confidence-gated ℓ", size=11, fill=INK)
-    c.text(40, 366, "Modelled. On the RX 7900 XTX the per-position verify cost ≈ 0, so gating ties always-verify-all — see docs/RESULTS.md §0.", size=11, fill=MUTED)
+    c.text(40, 366, "Modelled. On the RX 7900 XTX the per-position verify cost ≈ 0, so gating ties always-verify-all, see docs/RESULTS.md §0.", size=11, fill=MUTED)
     save(c, out, "Policy ablation")
 
 

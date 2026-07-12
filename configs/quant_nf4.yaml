@@ -1,4 +1,4 @@
-# NF4 4-bit drafter — the aggressive variant, the hardest case for calibration.
+# NF4 4-bit drafter, the aggressive variant, the hardest case for calibration.
 name: nf4
 scheme: nf4
 target: drafter
