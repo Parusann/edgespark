@@ -45,7 +45,7 @@ the drafter has to be quantized to INT8/4-bit to fit, and:
 | **Output identical** (greedy) | token-for-token | exact | ✅ **validated on real Qwen3-4B** (`exact_ok=true`) |
 | **Memory** (verifier + drafter + KV) | fit 24 GB | 9.4 GB | ✅ **measured 9.5 GB peak, ~15 GB free** (fp16) |
 | **Throughput** (INT8 drafter, code / chat) | ≥ 25% over baseline | +43% / +36% | 🔶 **modelled**, quantized run pending¹ |
-| **Calibration** (NF4 head) | recover ECE → fp16 | 0.166 → 0.014 | 🔶 **modelled**, pending¹ |
+| **Calibration** (NF4 head) | recover ECE → fp16 | 0.162 → 0.010 | 🔶 **modelled**, pending¹ |
 | **Policy** (confidence-gated ℓ) | beat always-verify-all | wins | ⚠️ **ties on this GPU**, verify marginal ≈ 0² |
 
 > **Hardware validation (RX 7900 XTX · native-Windows ROCm · 2026-07-05).** The
@@ -78,8 +78,8 @@ the drafter has to be quantized to INT8/4-bit to fit, and:
 
 Quantization barely touches which tokens the drafter proposes, but it makes its
 confidence head badly **over-confident**, and the more aggressive the
-quantization, the worse it gets (the fitted temperature climbs 1.03 → 1.81 →
-2.70). Temperature scaling on a few thousand held-out positions, no retraining,
+quantization, the worse it gets (the fitted temperature climbs 1.03 → 1.78 →
+2.64). Temperature scaling on a few thousand held-out positions, no retraining,
 pulls the points back onto the diagonal. That is the whole thesis, made visual.
 
 ## Quickstart
@@ -187,7 +187,7 @@ edgespark/
 |---|---|
 | GPU | Radeon RX 7900 XTX · 24 GB · RDNA3 / gfx1100 |
 | CPU / RAM | Ryzen 9 7900 (12c) · 32 GB (stream caches from SSD; never load whole) |
-| Stack | ROCm 7.2.4 · PyTorch ROCm · HF Transformers · bitsandbytes-ROCm |
+| Stack | ROCm 7.2.0.dev SDK · PyTorch ROCm · HF Transformers |
 | Verifier | Qwen3-4B (fp16 or INT8/NF4); Qwen3-8B as a quantized stretch |
 | Quantization | INT8 W8A8 · NF4, **no FP8** (unsupported on RDNA3) |
 | Attention | PyTorch SDPA by default; flash-attention (navi fork) optional |

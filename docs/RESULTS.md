@@ -38,7 +38,7 @@ hardware vs. still modelled):
 |---|---|---|
 | End-to-end throughput, INT8 drafter, code | ≥ 25% over vanilla quantized baseline | +43% · 🔶 modelled |
 | End-to-end throughput, INT8 drafter, chat | ≥ 25% | +36% · 🔶 modelled |
-| Confidence ECE recovered by recalibration (NF4) | near fp16 | 0.166 → 0.014 · 🔶 modelled |
+| Confidence ECE recovered by recalibration (NF4) | near fp16 | 0.162 → 0.010 · 🔶 modelled |
 | Confidence-gated policy vs. always-verify-all | higher tok/s | wins · ⚠️ ties on this GPU |
 | Verifier + drafter + KV in 24 GB | fits with headroom | ✅ measured 9.5 GB peak, ~15 GB free |
 | Output vs. deployed verifier | token-for-token identical (greedy) | ✅ **measured on real Qwen3-4B** |
@@ -72,11 +72,11 @@ Quantization damages the confidence head's *calibration* far more than its token
 | Precision | ECE (raw) | ECE (recalibrated) | Brier (raw → recal) | Temperature |
 |---|---|---|---|---|
 | fp16 | 0.006 | 0.003 | 0.159 → 0.159 | 1.03 |
-| INT8 | 0.097 | 0.006 | 0.179 → 0.168 | 1.81 |
-| NF4 | 0.166 | 0.014 | 0.218 → 0.188 | 2.70 |
+| INT8 | 0.097 | 0.006 | 0.179 → 0.168 | 1.78 |
+| NF4 | 0.162 | 0.010 | 0.215 → 0.186 | 2.64 |
 
 Two things to read off the table. First, the fitted temperature climbs with
-quantization aggressiveness (1.03 → 1.81 → 2.70): the 4-bit head is badly
+quantization aggressiveness (1.03 → 1.78 → 2.64): the 4-bit head is badly
 over-confident and needs to be cooled hard. Second, the ECE recovery is almost
 total, a large, cleanly *recoverable* miscalibration gap, which is exactly the
 positive result the project set out to find (spec §17).
